@@ -1,21 +1,14 @@
 # jeff-food-tracker
 
-> A personal weight and calorie tracker for Jeff, built to support an extreme
-> low-calorie deficit program aimed at losing 35–40 lbs in six months.
+> A personal calorie and weight tracker for Jeff, built to support a 35-lb weight loss goal before a type 2 diabetes diagnosis forces a career change.
 
 ## Business Problem
 
-Jeff is trying to lose a significant amount of weight using a very low caloric
-intake approach he calls the "Auschwitz Training Program" — a dark-humor name
-for an extreme caloric deficit diet modeled on severe food restriction. Without
-a tracker, there is no visibility into daily intake, weight trend, or whether
-the deficit is being maintained consistently.
+Jeff has no visibility into his daily calorie intake or output. Without logging, there is no way to know whether a calorie deficit is being maintained, where it is breaking down, or whether the program is working. His current workaround is guesswork — no app, no log, nothing to course-correct from.
 
 ## Why
 
-Jeff started the program in September 2026. Without logging from day one,
-trend data is lost and there is no way to course-correct or confirm progress
-toward the 35–40 lb goal within six months.
+Jeff is on the verge of a type 2 diabetes diagnosis. If his weight doesn't come down now, he may be forced out of his current role and into a trucking position. The window to reverse course without medical intervention is closing. Every week without a log is a week of trend data that can't be recovered.
 
 ## How
 
@@ -27,16 +20,11 @@ needing an account or sync service.
 
 ## Not This
 
-- Not a general-purpose fitness or nutrition app
-- Not a medical or clinical tool — no doctor recommendations, no macro
-  analysis, no BMI calculations
-- Not multi-user — built for one person (Jeff)
+Not a general-purpose fitness or nutrition app. Not a medical or clinical tool — no doctor recommendations, no macro breakdowns, no medication tracking, no BMI calculations, and no substitute for the physician monitoring Jeff's diabetes risk. Not multi-user or cloud-synced.
 
 ## Impact
 
-Jeff loses 35–40 lbs within 6 months (by approximately March 2027). Secondary:
-weekly weight trend is visible and shareable between Jeff and Wade without any
-login or app install.
+Jeff reaches 225 lbs within 6 months (by approximately March 2027), reducing his type 2 diabetes risk and preserving his current career path. Secondary: Wade and Jeff have a shared, up-to-date view of daily progress without any login or app install required.
 
 ## Details
 
@@ -49,7 +37,7 @@ login or app install.
 | **Repo** | https://github.com/wadegerencser/jeff-food-tracker |
 | **Local path** | `~/Projects/jeff-food-tracker/` |
 | **Started** | 2026-09-22 (Jeff's Day 4, first recorded weight: 245.7 lbs) |
-| **Goal** | 205–210 lbs by ~March 2027 |
+| **Goal** | 225 lbs by ~March 2027 |
 
 ---
 
@@ -81,7 +69,7 @@ git push
 | Setting | Default | Notes |
 |---|---|---|
 | Daily calorie goal | 1500 cal | Adjust based on protocol phase |
-| Protocol name | Auschwitz Protocol | Display-only label in the header |
+| Protocol name | Jeff's 225 Program | Display-only label in the header |
 
 ### If Wade switches computers or browsers
 
