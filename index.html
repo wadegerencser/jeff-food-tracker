@@ -1,0 +1,924 @@
+<!doctype html>
+<title>Jeff's Tracker</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+/* ── Token system: dark-first ─────────────────────────── */
+:root {
+  --bg:        #0C0E14;
+  --surface:   #141820;
+  --surface-2: #1C2235;
+  --border:    #252C42;
+  --text:      #E3E6F0;
+  --text-2:    #8990B5;
+  --accent:    #12D4A0;
+  --cal:       #F07820;
+  --danger:    #E84040;
+  --accent-a:  rgba(18,212,160,.15);
+  --cal-a:     rgba(240,120,32,.15);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:        #EEF0F7;
+    --surface:   #FFFFFF;
+    --surface-2: #E4E8F5;
+    --border:    #CDD2E8;
+    --text:      #141822;
+    --text-2:    #5A6285;
+    --accent:    #0AB88C;
+    --cal:       #D96A18;
+    --danger:    #CC2828;
+    --accent-a:  rgba(10,184,140,.12);
+    --cal-a:     rgba(217,106,24,.12);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg:        #EEF0F7;
+  --surface:   #FFFFFF;
+  --surface-2: #E4E8F5;
+  --border:    #CDD2E8;
+  --text:      #141822;
+  --text-2:    #5A6285;
+  --accent:    #0AB88C;
+  --cal:       #D96A18;
+  --danger:    #CC2828;
+  --accent-a:  rgba(10,184,140,.12);
+  --cal-a:     rgba(217,106,24,.12);
+  color-scheme: light;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+body {
+  padding-inline: 20px;
+  padding-block:
+    calc(env(safe-area-inset-top,0px) + 16px)
+    calc(env(safe-area-inset-bottom,0px) + 40px);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Read-only banner ─────────────────────────────────── */
+.ro-banner {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent-a);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: .88rem;
+  color: var(--accent);
+}
+.ro-banner.show { display: flex; }
+
+/* ── Header ───────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-block: 24px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.header-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.header-title em { color: var(--accent); font-style: normal; }
+.day-badge {
+  font-family: 'Oswald', sans-serif;
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  background: var(--accent-a);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+.protocol-label {
+  font-size: .76rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.header-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.icon-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: .8rem;
+  transition: color .15s, border-color .15s;
+  line-height: 1;
+  white-space: nowrap;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.icon-btn:hover { color: var(--text); border-color: var(--text-2); }
+
+/* ── Settings panel ───────────────────────────────────── */
+.settings-panel {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 14px;
+  gap: 12px 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.settings-panel.open { display: flex; }
+.sf { display: flex; flex-direction: column; gap: 5px; }
+
+/* ── Stats row ────────────────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding-block: 18px;
+}
+@media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.stat-label {
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+.stat-value {
+  font-family: 'Oswald', sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat-value.green { color: var(--accent); }
+.stat-unit { font-size: .76rem; color: var(--text-2); margin-top: 3px; }
+
+/* ── Layout ───────────────────────────────────────────── */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 860px) { .main-grid { grid-template-columns: 1fr; } }
+
+/* ── Cards ────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+}
+.card-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: .78rem;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: 14px;
+}
+
+/* ── Charts ───────────────────────────────────────────── */
+.chart-wrap    { position: relative; height: 260px; }
+.chart-wrap-sm { position: relative; height: 148px; }
+
+/* ── Today panel ──────────────────────────────────────── */
+.today-date-line {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.cal-bar-wrap { margin-bottom: 16px; }
+.cal-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+.cal-num {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--cal);
+}
+.cal-goal-text { font-size: .76rem; color: var(--text-2); }
+.progress-track {
+  height: 5px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--cal);
+  border-radius: 3px;
+  transition: width .3s ease;
+}
+.progress-fill.over { background: var(--danger); }
+.cal-remain { font-size: .76rem; color: var(--text-2); margin-top: 4px; }
+.cal-remain.over { color: var(--danger); }
+
+/* ── Meals list ───────────────────────────────────────── */
+.meals-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.meal-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: .88rem;
+}
+.meal-name { flex: 1; }
+.meal-cal {
+  font-family: 'Oswald', sans-serif;
+  font-size: .88rem;
+  font-weight: 500;
+  color: var(--cal);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.del-btn {
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: .82rem;
+  padding: 0 2px;
+  opacity: .5;
+  transition: opacity .15s, color .15s;
+  line-height: 1;
+}
+.del-btn:hover { opacity: 1; color: var(--danger); }
+.empty-note { font-size: .84rem; color: var(--text-2); font-style: italic; padding: 4px 0; }
+
+/* ── Forms ────────────────────────────────────────────── */
+.log-forms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 14px;
+}
+@media (max-width: 580px) { .log-forms { grid-template-columns: 1fr; } }
+.form-col { display: flex; flex-direction: column; gap: 8px; }
+label {
+  font-size: .7rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  font-weight: 500;
+}
+input[type="text"],
+input[type="number"],
+input[type="date"] {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 11px;
+  color: var(--text);
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: .95rem;
+  width: 100%;
+  transition: border-color .15s;
+}
+input:focus { outline: none; border-color: var(--accent); }
+input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
+.btn {
+  font-family: 'Oswald', sans-serif;
+  font-size: .84rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  width: 100%;
+  margin-top: 4px;
+}
+.btn:active { transform: scale(.98); }
+.btn:hover  { opacity: .88; }
+.btn-green  { background: var(--accent); color: #0B0D11; }
+.btn-orange { background: var(--cal);    color: #0B0D11; }
+
+/* ── Weight history ───────────────────────────────────── */
+.hist-wrap { margin-top: 14px; }
+.hist-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  border-radius: 6px;
+  padding: 6px 13px;
+  cursor: pointer;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: .8rem;
+  margin-bottom: 10px;
+  transition: color .15s, border-color .15s;
+}
+.hist-toggle:hover { color: var(--text); border-color: var(--text-2); }
+.hist-body { display: none; overflow-x: auto; }
+.hist-body.open { display: block; }
+.hist-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .86rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hist-table th {
+  text-align: left;
+  font-size: .66rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+.hist-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.hist-table td.wval {
+  font-family: 'Oswald', sans-serif;
+  font-size: .95rem;
+  font-weight: 500;
+}
+.hist-table td.down { color: var(--accent); }
+.hist-table td.up   { color: var(--danger); }
+
+/* ── Toast ────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom,0px) + 24px);
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: .84rem;
+  opacity: 0;
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 100;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+
+<div class="ro-banner" id="roBanner">
+  <strong>View only</strong> — Wade shared this progress snapshot with you. Data is not live; ask Wade to send a fresh link for the latest.
+</div>
+
+<header class="header">
+  <div class="header-title">Jeff<em>'s</em> Tracker</div>
+  <div class="day-badge" id="dayBadge">Day —</div>
+  <div class="protocol-label" id="protocolLabel">Protocol</div>
+  <div class="header-actions" id="headerActions">
+    <button class="icon-btn" id="shareBtn">Share link</button>
+    <button class="icon-btn" id="settingsBtn">Settings</button>
+    <button class="icon-btn" id="themeBtn">◐</button>
+  </div>
+</header>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="sf">
+    <label for="goalInput">Daily Calorie Goal</label>
+    <input type="number" id="goalInput" style="width:110px" min="500" max="5000" step="50">
+  </div>
+  <div class="sf">
+    <label for="protocolInput">Protocol Name</label>
+    <input type="text" id="protocolInput" style="width:220px">
+  </div>
+  <div class="sf" style="justify-content:flex-end">
+    <button class="btn btn-green" style="width:auto;padding:8px 22px" id="saveSettings">Save</button>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-tile">
+    <div class="stat-label">Current Weight</div>
+    <div class="stat-value" id="statWeight">—</div>
+    <div class="stat-unit">lbs</div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-label">Total Lost</div>
+    <div class="stat-value green" id="statLost">—</div>
+    <div class="stat-unit" id="statLostUnit">lbs</div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-label">Calories Today</div>
+    <div class="stat-value" id="statCals">0</div>
+    <div class="stat-unit" id="statCalsUnit">/ 1500 goal</div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-label">Days on Protocol</div>
+    <div class="stat-value green" id="statDays">—</div>
+    <div class="stat-unit">days</div>
+  </div>
+</div>
+
+<div class="main-grid">
+
+  <!-- Left: charts + log forms -->
+  <div>
+    <div class="card">
+      <div class="card-title">Weight Trend</div>
+      <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">Daily Calories — Last 7 Days</div>
+      <div class="chart-wrap-sm"><canvas id="calChart"></canvas></div>
+    </div>
+
+    <div id="logSection">
+      <div class="log-forms">
+        <div class="card">
+          <div class="card-title">Record Weight</div>
+          <div class="form-col">
+            <div><label for="wDate">Date</label><input type="date" id="wDate"></div>
+            <div><label for="wVal">Weight (lbs)</label><input type="number" id="wVal" placeholder="245.0" step="0.1" min="50" max="700"></div>
+            <button class="btn btn-green" id="logWeightBtn">Log Weight</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Add Meal</div>
+          <div class="form-col">
+            <div><label for="mDate">Date</label><input type="date" id="mDate"></div>
+            <div><label for="mName">Food</label><input type="text" id="mName" placeholder="e.g. Grilled chicken"></div>
+            <div><label for="mCals">Calories</label><input type="number" id="mCals" placeholder="450" min="0" max="9999"></div>
+            <button class="btn btn-orange" id="logMealBtn">Add Meal</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hist-wrap">
+        <button class="hist-toggle" id="histToggle">▾ Weight History</button>
+        <div class="hist-body" id="histBody">
+          <table class="hist-table">
+            <thead>
+              <tr><th>Date</th><th>Day</th><th>Weight</th><th>Change</th><th></th></tr>
+            </thead>
+            <tbody id="histRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: today panel -->
+  <div>
+    <div class="card" style="position:sticky;top:16px">
+      <div class="today-date-line" id="todayDateLine">—</div>
+
+      <div class="cal-bar-wrap">
+        <div class="cal-bar-header">
+          <div>
+            <span class="cal-num" id="todayCalsNum">0</span>
+            <span style="font-size:.8rem;color:var(--text-2)"> cal</span>
+          </div>
+          <div class="cal-goal-text" id="calGoalText">Goal: 1500</div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <div class="cal-remain" id="calRemain">1500 remaining</div>
+      </div>
+
+      <div class="card-title">Today's Food</div>
+      <ul class="meals-list" id="todayMeals">
+        <li class="empty-note">Nothing logged yet</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY    = 'jeff_tracker_v2';
+const PROTOCOL_START = '2026-09-19'; // Day 1
+
+// ── Data ─────────────────────────────────────────────────
+const SEED = {
+  weights:  [{ date: '2026-09-22', weight: 245.7 }],
+  meals:    [],
+  goal:     1500,
+  protocol: 'Auschwitz Protocol'
+};
+
+let readOnly = false;
+let data;
+
+function loadData() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#data=')) {
+    try {
+      const d = JSON.parse(atob(hash.slice(6)));
+      if (d && Array.isArray(d.weights)) { readOnly = true; return d; }
+    } catch(e) {}
+  }
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) {
+      const p = JSON.parse(s);
+      if (!p.protocol) p.protocol = SEED.protocol;
+      return p;
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(SEED));
+}
+
+function saveData() {
+  if (readOnly) return;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+data = loadData();
+
+// ── Utils ─────────────────────────────────────────────────
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+function dayNum(d) {
+  const s = new Date(PROTOCOL_START + 'T12:00:00Z');
+  return Math.max(1, Math.floor((new Date(d + 'T12:00:00Z') - s) / 86400000) + 1);
+}
+
+function fmtDate(d) {
+  const [,m,day] = d.split('-').map(Number);
+  return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] + ' ' + day;
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ── Chart helpers ─────────────────────────────────────────
+function cv(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function clr() {
+  return {
+    text: cv('--text'), text2: cv('--text-2'), grid: cv('--border'),
+    accent: cv('--accent'), cal: cv('--cal'), danger: cv('--danger'),
+    surface2: cv('--surface-2')
+  };
+}
+
+let wChart = null, cChart = null;
+
+function renderWeightChart(sorted) {
+  const c      = clr();
+  const ctx    = document.getElementById('weightChart').getContext('2d');
+  const labels = sorted.map(w => fmtDate(w.date));
+  const vals   = sorted.map(w => w.weight);
+  const yMin   = vals.length ? Math.floor(Math.min(...vals) - 5) : 200;
+  const yMax   = vals.length ? Math.ceil(Math.max(...vals)  + 5) : 300;
+
+  if (wChart) wChart.destroy();
+  wChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        borderColor: c.accent,
+        backgroundColor: c.accent + '1F',
+        pointBackgroundColor: c.accent,
+        pointRadius: vals.length === 1 ? 6 : 4,
+        pointHoverRadius: 7,
+        fill: true,
+        tension: 0.3,
+        borderWidth: 2.5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: c.surface2,
+          borderColor: c.grid,
+          borderWidth: 1,
+          titleColor: c.text2,
+          bodyColor: c.text,
+          callbacks: { label: ctx => '  ' + ctx.parsed.y.toFixed(1) + ' lbs' }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: c.grid + '55' },
+          ticks: { color: c.text2, font: { family:"'Source Sans 3',sans-serif", size:11 } },
+          border: { display: false }
+        },
+        y: {
+          suggestedMin: yMin,
+          suggestedMax: yMax,
+          grid: { color: c.grid + '55' },
+          ticks: {
+            color: c.text2,
+            font: { family:"'Source Sans 3',sans-serif", size:11 },
+            callback: v => v + ' lb'
+          },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+function renderCalChart() {
+  const c    = clr();
+  const ctx  = document.getElementById('calChart').getContext('2d');
+  const goal = data.goal || 1500;
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().split('T')[0];
+  });
+
+  const labels = days.map(fmtDate);
+  const vals   = days.map(d =>
+    data.meals.filter(m => m.date === d).reduce((s, m) => s + m.calories, 0)
+  );
+
+  if (cChart) cChart.destroy();
+  cChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: vals.map(v => (v > goal ? c.danger : c.cal) + 'BB'),
+        borderColor:      vals.map(v => v > goal ? c.danger : c.cal),
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: c.surface2,
+          borderColor: c.grid,
+          borderWidth: 1,
+          titleColor: c.text2,
+          bodyColor: c.text,
+          callbacks: { label: ctx => '  ' + ctx.parsed.y + ' cal' }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: c.text2, font: { family:"'Source Sans 3',sans-serif", size:11 } },
+          border: { display: false }
+        },
+        y: {
+          grid: { color: c.grid + '55' },
+          ticks: { color: c.text2, font: { family:"'Source Sans 3',sans-serif", size:11 } },
+          border: { display: false }
+        }
+      }
+    }
+  });
+}
+
+// ── Render ────────────────────────────────────────────────
+function render() {
+  const td   = todayStr();
+  const goal = data.goal || 1500;
+
+  document.getElementById('dayBadge').textContent    = 'Day ' + dayNum(td);
+  document.getElementById('protocolLabel').textContent = data.protocol || 'Protocol';
+
+  if (readOnly) {
+    document.getElementById('roBanner').classList.add('show');
+    document.getElementById('logSection').style.display  = 'none';
+    document.getElementById('headerActions').style.display = 'none';
+  }
+
+  const sorted = [...data.weights].sort((a,b) => a.date.localeCompare(b.date));
+  const latest = sorted[sorted.length - 1];
+  const first  = sorted[0];
+
+  document.getElementById('statWeight').textContent = latest ? latest.weight.toFixed(1) : '—';
+
+  if (sorted.length >= 2) {
+    const lost = first.weight - latest.weight;
+    const el   = document.getElementById('statLost');
+    el.textContent = Math.abs(lost).toFixed(1);
+    el.style.color = lost >= 0 ? 'var(--accent)' : 'var(--danger)';
+    document.getElementById('statLostUnit').textContent = lost >= 0 ? 'lbs lost' : 'lbs gained';
+  }
+
+  document.getElementById('statDays').textContent = dayNum(td);
+
+  const todayMeals = data.meals.filter(m => m.date === td);
+  const todayCals  = todayMeals.reduce((s,m) => s + m.calories, 0);
+  document.getElementById('statCals').textContent    = todayCals;
+  document.getElementById('statCalsUnit').textContent = '/ ' + goal + ' goal';
+
+  // Today panel
+  document.getElementById('todayDateLine').textContent = fmtDate(td);
+  document.getElementById('todayCalsNum').textContent  = todayCals;
+  document.getElementById('calGoalText').textContent   = 'Goal: ' + goal;
+
+  const pct  = Math.min(100, Math.round((todayCals / goal) * 100));
+  const fill = document.getElementById('progressFill');
+  fill.style.width = pct + '%';
+  fill.classList.toggle('over', todayCals > goal);
+
+  const rem   = goal - todayCals;
+  const remEl = document.getElementById('calRemain');
+  remEl.textContent = rem > 0 ? rem + ' remaining' : rem === 0 ? 'Goal reached' : Math.abs(rem) + ' over goal';
+  remEl.classList.toggle('over', rem < 0);
+
+  // Today meals list
+  const list = document.getElementById('todayMeals');
+  list.innerHTML = todayMeals.length === 0
+    ? '<li class="empty-note">Nothing logged yet — fasting or no data</li>'
+    : todayMeals.map(m =>
+        `<li class="meal-item">
+          <span class="meal-name">${esc(m.name)}</span>
+          <span class="meal-cal">${m.calories} cal</span>
+          ${readOnly ? '' : `<button class="del-btn" data-id="${m.id}" title="Remove">✕</button>`}
+        </li>`
+      ).join('');
+
+  renderHistory(sorted);
+  renderWeightChart(sorted);
+  renderCalChart();
+}
+
+function renderHistory(sorted) {
+  const tbody = document.getElementById('histRows');
+  if (!sorted.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text-2);padding:10px 8px">No entries yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = [...sorted].reverse().map((w, i, arr) => {
+    const prev  = arr[i + 1];
+    const delta = prev ? (w.weight - prev.weight) : null;
+    const str   = delta == null ? '—' : (delta > 0 ? '+' : '') + delta.toFixed(1);
+    const cls   = delta == null ? '' : delta < 0 ? 'down' : delta > 0 ? 'up' : '';
+    return `<tr>
+      <td>${fmtDate(w.date)}</td>
+      <td style="color:var(--text-2)">Day ${dayNum(w.date)}</td>
+      <td class="wval">${w.weight.toFixed(1)} lbs</td>
+      <td class="${cls}">${str}</td>
+      <td>${readOnly ? '' : `<button class="del-btn" data-wdate="${w.date}" title="Remove">✕</button>`}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Actions ───────────────────────────────────────────────
+document.getElementById('logWeightBtn')?.addEventListener('click', () => {
+  const date = document.getElementById('wDate').value;
+  const val  = parseFloat(document.getElementById('wVal').value);
+  if (!date || isNaN(val) || val < 50 || val > 700) { toast('Enter a valid date and weight'); return; }
+  const idx = data.weights.findIndex(w => w.date === date);
+  if (idx >= 0) data.weights[idx].weight = val;
+  else data.weights.push({ date, weight: val });
+  saveData();
+  document.getElementById('wVal').value = '';
+  render();
+  toast('Weight logged');
+});
+
+document.getElementById('logMealBtn')?.addEventListener('click', () => {
+  const date = document.getElementById('mDate').value;
+  const name = document.getElementById('mName').value.trim();
+  const cals = parseInt(document.getElementById('mCals').value);
+  if (!date || !name || isNaN(cals) || cals < 0) { toast('Fill in all meal fields'); return; }
+  data.meals.push({ id: uid(), date, name, calories: cals });
+  saveData();
+  document.getElementById('mName').value = '';
+  document.getElementById('mCals').value = '';
+  render();
+  toast('Meal added');
+});
+
+document.getElementById('todayMeals').addEventListener('click', e => {
+  const btn = e.target.closest('[data-id]');
+  if (!btn || readOnly) return;
+  data.meals = data.meals.filter(m => m.id !== btn.dataset.id);
+  saveData(); render(); toast('Meal removed');
+});
+
+document.getElementById('histRows').addEventListener('click', e => {
+  const btn = e.target.closest('[data-wdate]');
+  if (!btn || readOnly) return;
+  data.weights = data.weights.filter(w => w.date !== btn.dataset.wdate);
+  saveData(); render(); toast('Entry removed');
+});
+
+document.getElementById('histToggle')?.addEventListener('click', () => {
+  const body = document.getElementById('histBody');
+  body.classList.toggle('open');
+  document.getElementById('histToggle').textContent =
+    body.classList.contains('open') ? '▴ Weight History' : '▾ Weight History';
+});
+
+document.getElementById('settingsBtn')?.addEventListener('click', () => {
+  const p = document.getElementById('settingsPanel');
+  p.classList.toggle('open');
+  if (p.classList.contains('open')) {
+    document.getElementById('goalInput').value     = data.goal || 1500;
+    document.getElementById('protocolInput').value = data.protocol || '';
+  }
+});
+
+document.getElementById('saveSettings')?.addEventListener('click', () => {
+  const g = parseInt(document.getElementById('goalInput').value);
+  const p = document.getElementById('protocolInput').value.trim();
+  if (!isNaN(g) && g >= 500 && g <= 5000) data.goal = g;
+  if (p) data.protocol = p;
+  saveData();
+  document.getElementById('settingsPanel').classList.remove('open');
+  render();
+  toast('Settings saved');
+});
+
+document.getElementById('shareBtn')?.addEventListener('click', () => {
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  const url     = window.location.href.split('#')[0] + '#data=' + encoded;
+  navigator.clipboard.writeText(url).then(
+    () => toast('Share link copied — send it to Jeff'),
+    () => { window.prompt('Copy this link for Jeff:', url); }
+  );
+});
+
+document.getElementById('themeBtn')?.addEventListener('click', () => {
+  const root = document.documentElement;
+  root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  setTimeout(() => {
+    const s = [...data.weights].sort((a,b) => a.date.localeCompare(b.date));
+    renderWeightChart(s);
+    renderCalChart();
+  }, 30);
+});
+
+// ── Init ──────────────────────────────────────────────────
+const td = todayStr();
+if (document.getElementById('wDate')) document.getElementById('wDate').value = td;
+if (document.getElementById('mDate')) document.getElementById('mDate').value = td;
+render();
+</script>
