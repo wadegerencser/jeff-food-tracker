@@ -310,7 +310,8 @@ label {
 }
 input[type="text"],
 input[type="number"],
-input[type="date"] {
+input[type="date"],
+select {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -321,8 +322,11 @@ input[type="date"] {
   width: 100%;
   transition: border-color .15s;
 }
-input:focus { outline: none; border-color: var(--accent); }
+input:focus, select:focus { outline: none; border-color: var(--accent); }
 input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
+select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 28px; }
+.sel-wrap { position: relative; }
+.sel-wrap::after { content: "▾"; position: absolute; right: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-2); font-size: .8rem; }
 .btn {
   font-family: 'Oswald', sans-serif;
   font-size: .84rem;
@@ -490,8 +494,93 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
           <div class="card-title">Add Meal</div>
           <div class="form-col">
             <div><label for="mDate">Date</label><input type="date" id="mDate"></div>
-            <div><label for="mName">Food</label><input type="text" id="mName" placeholder="e.g. Grilled chicken"></div>
-            <div><label for="mCals">Calories</label><input type="number" id="mCals" placeholder="450" min="0" max="9999"></div>
+            <div>
+              <label for="mName">Food</label>
+              <div class="sel-wrap">
+                <select id="mName">
+                  <option value="">— Select a food —</option>
+                  <optgroup label="Vegetables">
+                    <option value="16|Cucumber (1 cup sliced)">Cucumber · 1 cup sliced — 16 cal</option>
+                    <option value="27|Cherry tomatoes (1 cup)">Cherry tomatoes · 1 cup — 27 cal</option>
+                    <option value="120|Avocado (½ medium)">Avocado · ½ medium — 120 cal</option>
+                    <option value="52|Baby carrots (1 cup)">Baby carrots · 1 cup — 52 cal</option>
+                    <option value="55|Broccoli, cooked (1 cup)">Broccoli, cooked · 1 cup — 55 cal</option>
+                    <option value="16|Celery (1 cup)">Celery · 1 cup — 16 cal</option>
+                    <option value="14|Spinach, raw (2 cups)">Spinach, raw · 2 cups — 14 cal</option>
+                    <option value="31|Bell pepper (1 medium)">Bell pepper · 1 medium — 31 cal</option>
+                    <option value="21|Zucchini (1 cup sliced)">Zucchini · 1 cup sliced — 21 cal</option>
+                    <option value="27|Asparagus (1 cup)">Asparagus · 1 cup — 27 cal</option>
+                    <option value="44|Green beans (1 cup)">Green beans · 1 cup — 44 cal</option>
+                    <option value="33|Kale, raw (1 cup)">Kale, raw · 1 cup — 33 cal</option>
+                    <option value="25|Cauliflower (1 cup)">Cauliflower · 1 cup — 25 cal</option>
+                    <option value="103|Sweet potato (1 medium)">Sweet potato · 1 medium — 103 cal</option>
+                    <option value="18|Mushrooms, sliced (1 cup)">Mushrooms, sliced · 1 cup — 18 cal</option>
+                    <option value="20|Onion (½ cup chopped)">Onion · ½ cup chopped — 20 cal</option>
+                    <option value="17|Romaine lettuce (2 cups)">Romaine lettuce · 2 cups — 17 cal</option>
+                    <option value="95|Edamame (½ cup shelled)">Edamame · ½ cup shelled — 95 cal</option>
+                    <option value="19|Radishes (1 cup)">Radishes · 1 cup — 19 cal</option>
+                    <option value="38|Beets (½ cup cooked)">Beets · ½ cup cooked — 38 cal</option>
+                  </optgroup>
+                  <optgroup label="Fruits">
+                    <option value="65|Black raspberries (1 cup)">Black raspberries · 1 cup — 65 cal</option>
+                    <option value="84|Blueberries (1 cup)">Blueberries · 1 cup — 84 cal</option>
+                    <option value="49|Strawberries (1 cup)">Strawberries · 1 cup — 49 cal</option>
+                    <option value="95|Apple (1 medium)">Apple · 1 medium — 95 cal</option>
+                    <option value="105|Banana (1 medium)">Banana · 1 medium — 105 cal</option>
+                    <option value="62|Orange (1 medium)">Orange · 1 medium — 62 cal</option>
+                    <option value="104|Grapes (1 cup)">Grapes · 1 cup — 104 cal</option>
+                    <option value="46|Watermelon (1 cup diced)">Watermelon · 1 cup diced — 46 cal</option>
+                    <option value="59|Peach (1 medium)">Peach · 1 medium — 59 cal</option>
+                    <option value="82|Pineapple (1 cup)">Pineapple · 1 cup — 82 cal</option>
+                    <option value="37|Grapefruit (½ medium)">Grapefruit · ½ medium — 37 cal</option>
+                    <option value="67|Cherries (1 cup)">Cherries · 1 cup — 67 cal</option>
+                    <option value="60|Mango (½ cup)">Mango · ½ cup — 60 cal</option>
+                    <option value="42|Kiwi (1 medium)">Kiwi · 1 medium — 42 cal</option>
+                    <option value="86|Pear (1 medium)">Pear · 1 medium — 86 cal</option>
+                    <option value="54|Cantaloupe (1 cup)">Cantaloupe · 1 cup — 54 cal</option>
+                    <option value="32|Raspberries (½ cup)">Raspberries · ½ cup — 32 cal</option>
+                  </optgroup>
+                  <optgroup label="Proteins &amp; Meats">
+                    <option value="187|Chicken breast, cooked (4 oz)">Chicken breast, cooked · 4 oz — 187 cal</option>
+                    <option value="70|Egg, whole (1 large)">Egg, whole · 1 large — 70 cal</option>
+                    <option value="234|Salmon fillet, cooked (4 oz)">Salmon fillet, cooked · 4 oz — 234 cal</option>
+                    <option value="199|Ground beef, 90% lean (4 oz)">Ground beef, 90% lean · 4 oz — 199 cal</option>
+                    <option value="153|Turkey breast, cooked (4 oz)">Turkey breast, cooked · 4 oz — 153 cal</option>
+                    <option value="73|Tuna, canned in water (3 oz)">Tuna, canned in water · 3 oz — 73 cal</option>
+                    <option value="136|Pork tenderloin, cooked (4 oz)">Pork tenderloin, cooked · 4 oz — 136 cal</option>
+                    <option value="85|Turkey sausage link (1 link)">Turkey sausage link · 1 link — 85 cal</option>
+                    <option value="112|Shrimp, cooked (4 oz)">Shrimp, cooked · 4 oz — 112 cal</option>
+                    <option value="111|Tilapia, cooked (4 oz)">Tilapia, cooked · 4 oz — 111 cal</option>
+                    <option value="93|Cod, cooked (4 oz)">Cod, cooked · 4 oz — 93 cal</option>
+                    <option value="149|Sirloin steak, lean (4 oz)">Sirloin steak, lean · 4 oz — 149 cal</option>
+                    <option value="110|Canned chickpeas (½ cup)">Canned chickpeas · ½ cup — 110 cal</option>
+                    <option value="170|Chicken thigh, cooked (4 oz)">Chicken thigh, cooked · 4 oz — 170 cal</option>
+                  </optgroup>
+                  <optgroup label="Dairy &amp; Nuts">
+                    <option value="130|Greek yogurt, plain 2% (¾ cup)">Greek yogurt, plain 2% · ¾ cup — 130 cal</option>
+                    <option value="80|String cheese (1 stick)">String cheese · 1 stick — 80 cal</option>
+                    <option value="164|Almonds (1 oz)">Almonds · 1 oz — 164 cal</option>
+                    <option value="185|Walnuts (1 oz)">Walnuts · 1 oz — 185 cal</option>
+                    <option value="119|Olive oil (1 tbsp)">Olive oil · 1 tbsp — 119 cal</option>
+                    <option value="102|Cottage cheese, low-fat (½ cup)">Cottage cheese, low-fat · ½ cup — 102 cal</option>
+                    <option value="100|Cheddar cheese (1 oz)">Cheddar cheese · 1 oz — 100 cal</option>
+                    <option value="190|Peanut butter (2 tbsp)">Peanut butter · 2 tbsp — 190 cal</option>
+                    <option value="160|Cashews (1 oz)">Cashews · 1 oz — 160 cal</option>
+                    <option value="165|Sunflower seeds (1 oz)">Sunflower seeds · 1 oz — 165 cal</option>
+                  </optgroup>
+                  <optgroup label="Grains &amp; Legumes">
+                    <option value="108|Brown rice, cooked (½ cup)">Brown rice, cooked · ½ cup — 108 cal</option>
+                    <option value="111|Quinoa, cooked (½ cup)">Quinoa, cooked · ½ cup — 111 cal</option>
+                    <option value="150|Steel-cut oats, dry (½ cup)">Steel-cut oats, dry · ½ cup — 150 cal</option>
+                    <option value="114|Black beans, cooked (½ cup)">Black beans, cooked · ½ cup — 114 cal</option>
+                    <option value="115|Lentils, cooked (½ cup)">Lentils, cooked · ½ cup — 115 cal</option>
+                    <option value="77|Corn tortilla (2 small)">Corn tortilla · 2 small — 77 cal</option>
+                    <option value="69|Whole grain bread (1 slice)">Whole grain bread · 1 slice — 69 cal</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+            <div><label for="mCals">Calories <span style="font-size:.65rem;color:var(--text-2)">(auto-filled, adjustable)</span></label><input type="number" id="mCals" placeholder="auto-filled" min="0" max="9999"></div>
             <button class="btn btn-orange" id="logMealBtn">Add Meal</button>
           </div>
         </div>
@@ -550,7 +639,7 @@ const SEED = {
   weights:  [{ date: '2026-09-22', weight: 245.7 }],
   meals:    [],
   goal:     1500,
-  protocol: 'Auschwitz Protocol'
+  protocol: "Jeff's 225 Program"
 };
 
 let readOnly = false;
@@ -843,14 +932,23 @@ document.getElementById('logWeightBtn')?.addEventListener('click', () => {
   toast('Weight logged');
 });
 
+document.getElementById('mName')?.addEventListener('change', () => {
+  const sel = document.getElementById('mName');
+  if (!sel.value) return;
+  const cal = parseInt(sel.value.split('|')[0]);
+  if (!isNaN(cal)) document.getElementById('mCals').value = cal;
+});
+
 document.getElementById('logMealBtn')?.addEventListener('click', () => {
-  const date = document.getElementById('mDate').value;
-  const name = document.getElementById('mName').value.trim();
-  const cals = parseInt(document.getElementById('mCals').value);
-  if (!date || !name || isNaN(cals) || cals < 0) { toast('Fill in all meal fields'); return; }
+  const date  = document.getElementById('mDate').value;
+  const sel   = document.getElementById('mName');
+  const parts = sel.value.split('|');
+  const name  = parts[1] || '';
+  const cals  = parseInt(document.getElementById('mCals').value);
+  if (!date || !name || isNaN(cals) || cals < 0) { toast('Select a food and set a date'); return; }
   data.meals.push({ id: uid(), date, name, calories: cals });
   saveData();
-  document.getElementById('mName').value = '';
+  sel.value = '';
   document.getElementById('mCals').value = '';
   render();
   toast('Meal added');
