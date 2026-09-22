@@ -5,6 +5,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <style>
 /* ── Token system: dark-first ─────────────────────────── */
@@ -424,6 +427,16 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 .hist-table td.down { color: var(--accent); }
 .hist-table td.up   { color: var(--danger); }
 
+/* ── Login screen ────────────────────────────────────────── */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:36px 32px;width:100%;max-width:360px;}
+.login-logo{font-family:'Oswald',sans-serif;font-size:1.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.login-logo em{color:var(--accent);font-style:normal;}
+.login-sub{font-size:.84rem;color:var(--text-2);margin-bottom:24px;}
+.login-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.login-err{font-size:.82rem;color:var(--danger);min-height:18px;margin-bottom:4px;}
+#mainApp[hidden]{display:none;}
+
 /* ── Goal Progress Section ───────────────────────────────── */
 .goal-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;margin-top:14px;}
 .goal-section-top{display:flex;align-items:baseline;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
@@ -482,6 +495,27 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 
+<div id="loginScreen" hidden>
+  <div class="login-card">
+    <div class="login-logo">Jeff<em>'s</em> Tracker</div>
+    <div class="login-sub">Sign in to view and log progress</div>
+    <form id="loginForm">
+      <div class="login-field">
+        <label for="loginEmail">Email</label>
+        <input type="text" id="loginEmail" placeholder="email@example.com" autocomplete="username">
+      </div>
+      <div class="login-field">
+        <label for="loginPass">Password</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div id="loginErr" class="login-err"></div>
+      <button type="submit" class="btn btn-green">Sign In</button>
+    </form>
+  </div>
+</div>
+
+<div id="mainApp" hidden>
+
 <div class="ro-banner" id="roBanner">
   <strong>View only</strong> — Wade shared this progress snapshot with you. Data is not live; ask Wade to send a fresh link for the latest.
 </div>
@@ -494,6 +528,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
     <button class="icon-btn" id="shareBtn">Share link</button>
     <button class="icon-btn" id="settingsBtn">Settings</button>
     <button class="icon-btn" id="themeBtn">◐</button>
+    <button class="icon-btn" id="signOutBtn" hidden>Sign out</button>
   </div>
 </header>
 
@@ -670,46 +705,119 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 
 <div class="toast" id="toast"></div>
 
-<script>
-const STORAGE_KEY    = 'jeff_tracker_v2';
-const PROTOCOL_START = '2026-09-19'; // Day 1
+</div><!-- #mainApp -->
 
-// ── Data ─────────────────────────────────────────────────
-const SEED = {
+<script>
+// ── Firebase ──────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyAenk4PyHBvVUGfb4BbE-xlyul_nWtcxuA",
+  authDomain:        "jeff-tracker.firebaseapp.com",
+  projectId:         "jeff-tracker",
+  storageBucket:     "jeff-tracker.firebasestorage.app",
+  messagingSenderId: "115698556634",
+  appId:             "1:115698556634:web:7f7b9c3cfc06bc5efc0fe3"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+const PROTOCOL_START = '2026-09-19';
+const STORAGE_KEY    = 'jeff_tracker_v2';
+const DEFAULT_DATA   = {
   weights:  [{ date: '2026-09-22', weight: 245.7 }],
   meals:    [],
   goal:     1500,
   protocol: "Jeff's 225 Program"
 };
 
-let readOnly = false;
-let data;
+let readOnly    = false;
+let data        = null;
+let currentUser = null;
+let unsubscribe = null;
 
-function loadData() {
-  const hash = window.location.hash;
-  if (hash.startsWith('#data=')) {
-    try {
-      const d = JSON.parse(atob(hash.slice(6)));
-      if (d && Array.isArray(d.weights)) { readOnly = true; return d; }
-    } catch(e) {}
+// ── Auth ──────────────────────────────────────────────────
+auth.onAuthStateChanged(user => {
+  // Share link — show app without login
+  if (window.location.hash.startsWith('#data=')) {
+    document.getElementById('loginScreen').hidden = true;
+    document.getElementById('mainApp').hidden = false;
+    handleShareLink(); return;
   }
+  if (user) {
+    currentUser = user;
+    document.getElementById('loginScreen').hidden = true;
+    document.getElementById('mainApp').hidden = false;
+    document.getElementById('signOutBtn').hidden = false;
+    listenFirestore();
+  } else {
+    currentUser = null;
+    document.getElementById('loginScreen').hidden = false;
+    document.getElementById('mainApp').hidden = true;
+    document.getElementById('signOutBtn').hidden = true;
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+  }
+});
+
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
   try {
-    const s = localStorage.getItem(STORAGE_KEY);
-    if (s) {
-      const p = JSON.parse(s);
-      if (!p.protocol) p.protocol = SEED.protocol;
-      return p;
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(err) {
+    errEl.textContent = 'Wrong email or password. Try again.';
+  }
+});
+
+document.getElementById('signOutBtn')?.addEventListener('click', () => auth.signOut());
+
+// ── Firestore ─────────────────────────────────────────────
+function docRef() { return db.collection('trackers').doc(currentUser.uid); }
+
+function handleShareLink() {
+  try {
+    const d = JSON.parse(atob(window.location.hash.slice(6)));
+    if (d && Array.isArray(d.weights)) {
+      readOnly = true; data = d;
+      document.getElementById('roBanner').classList.add('show');
+      document.getElementById('logSection').style.display  = 'none';
+      document.getElementById('headerActions').style.display = 'none';
+      const td = todayStr();
+      if (document.getElementById('wDate')) document.getElementById('wDate').value = td;
+      if (document.getElementById('mDate')) document.getElementById('mDate').value = td;
+      render();
     }
   } catch(e) {}
-  return JSON.parse(JSON.stringify(SEED));
+}
+
+function listenFirestore() {
+  if (unsubscribe) unsubscribe();
+  unsubscribe = docRef().onSnapshot(snap => {
+    if (snap.exists) {
+      data = snap.data();
+      if (!data.protocol) data.protocol = DEFAULT_DATA.protocol;
+      if (!Array.isArray(data.meals))   data.meals   = [];
+      if (!Array.isArray(data.weights)) data.weights = [];
+    } else {
+      // First sign-in — migrate localStorage or use defaults
+      const local = localStorage.getItem(STORAGE_KEY);
+      data = local ? (() => { try { return JSON.parse(local); } catch(e) { return null; } })() : null;
+      if (!data) data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      docRef().set(data);
+    }
+    const td = todayStr();
+    if (document.getElementById('wDate')) document.getElementById('wDate').value = td;
+    if (document.getElementById('mDate')) document.getElementById('mDate').value = td;
+    render();
+  }, err => console.error('Firestore error:', err));
 }
 
 function saveData() {
-  if (readOnly) return;
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  if (readOnly || !currentUser) return;
+  docRef().set(data).catch(e => console.error('Save failed:', e));
 }
-
-data = loadData();
 
 // ── Utils ─────────────────────────────────────────────────
 function todayStr() { return new Date().toISOString().split('T')[0]; }
@@ -877,12 +985,6 @@ function render() {
 
   document.getElementById('dayBadge').textContent    = 'Day ' + dayNum(td);
   document.getElementById('protocolLabel').textContent = data.protocol || 'Protocol';
-
-  if (readOnly) {
-    document.getElementById('roBanner').classList.add('show');
-    document.getElementById('logSection').style.display  = 'none';
-    document.getElementById('headerActions').style.display = 'none';
-  }
 
   const sorted = [...data.weights].sort((a,b) => a.date.localeCompare(b.date));
   const latest = sorted[sorted.length - 1];
@@ -1262,9 +1364,5 @@ document.getElementById('themeBtn')?.addEventListener('click', () => {
   }, 30);
 });
 
-// ── Init ──────────────────────────────────────────────────
-const td = todayStr();
-if (document.getElementById('wDate')) document.getElementById('wDate').value = td;
-if (document.getElementById('mDate')) document.getElementById('mDate').value = td;
-render();
+// Auth state drives init — see auth.onAuthStateChanged above
 </script>
