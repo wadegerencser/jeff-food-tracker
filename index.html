@@ -324,9 +324,41 @@ select {
 }
 input:focus, select:focus { outline: none; border-color: var(--accent); }
 input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
-select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 28px; }
-.sel-wrap { position: relative; }
-.sel-wrap::after { content: "▾"; position: absolute; right: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-2); font-size: .8rem; }
+/* ── Food picker ──────────────────────────────────────── */
+.fp-wrap { position: relative; }
+.fp-input-row { position: relative; }
+.fp-input-row input { padding-right: 34px; }
+.fp-clear-btn {
+  position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text-2); cursor: pointer;
+  font-size: .78rem; line-height: 1; padding: 2px 4px;
+  transition: color .15s;
+}
+.fp-clear-btn:hover { color: var(--danger); }
+.fp-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 200;
+  background: var(--surface); border: 1px solid var(--accent);
+  border-radius: 6px; max-height: 230px; overflow-y: auto;
+  box-shadow: 0 6px 24px rgba(0,0,0,.18);
+}
+.fp-group-label {
+  font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-2); padding: 9px 13px 4px; font-weight: 600;
+  border-top: 1px solid var(--border); margin-top: 2px;
+}
+.fp-group-label:first-child { border-top: none; margin-top: 0; }
+.fp-option {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 13px; cursor: pointer; font-size: .88rem; gap: 10px;
+  transition: background .1s;
+}
+.fp-option:hover { background: var(--accent-a); }
+.fp-option-name { flex: 1; line-height: 1.3; }
+.fp-option-cal {
+  font-family: 'Oswald', sans-serif; font-size: .82rem;
+  color: var(--cal); white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.fp-no-results { padding: 14px 13px; font-size: .84rem; color: var(--text-2); font-style: italic; }
 .btn {
   font-family: 'Oswald', sans-serif;
   font-size: .84rem;
@@ -495,89 +527,14 @@ select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-ri
           <div class="form-col">
             <div><label for="mDate">Date</label><input type="date" id="mDate"></div>
             <div>
-              <label for="mName">Food</label>
-              <div class="sel-wrap">
-                <select id="mName">
-                  <option value="">— Select a food —</option>
-                  <optgroup label="Vegetables">
-                    <option value="16|Cucumber (1 cup sliced)">Cucumber · 1 cup sliced — 16 cal</option>
-                    <option value="27|Cherry tomatoes (1 cup)">Cherry tomatoes · 1 cup — 27 cal</option>
-                    <option value="120|Avocado (½ medium)">Avocado · ½ medium — 120 cal</option>
-                    <option value="52|Baby carrots (1 cup)">Baby carrots · 1 cup — 52 cal</option>
-                    <option value="55|Broccoli, cooked (1 cup)">Broccoli, cooked · 1 cup — 55 cal</option>
-                    <option value="16|Celery (1 cup)">Celery · 1 cup — 16 cal</option>
-                    <option value="14|Spinach, raw (2 cups)">Spinach, raw · 2 cups — 14 cal</option>
-                    <option value="31|Bell pepper (1 medium)">Bell pepper · 1 medium — 31 cal</option>
-                    <option value="21|Zucchini (1 cup sliced)">Zucchini · 1 cup sliced — 21 cal</option>
-                    <option value="27|Asparagus (1 cup)">Asparagus · 1 cup — 27 cal</option>
-                    <option value="44|Green beans (1 cup)">Green beans · 1 cup — 44 cal</option>
-                    <option value="33|Kale, raw (1 cup)">Kale, raw · 1 cup — 33 cal</option>
-                    <option value="25|Cauliflower (1 cup)">Cauliflower · 1 cup — 25 cal</option>
-                    <option value="103|Sweet potato (1 medium)">Sweet potato · 1 medium — 103 cal</option>
-                    <option value="18|Mushrooms, sliced (1 cup)">Mushrooms, sliced · 1 cup — 18 cal</option>
-                    <option value="20|Onion (½ cup chopped)">Onion · ½ cup chopped — 20 cal</option>
-                    <option value="17|Romaine lettuce (2 cups)">Romaine lettuce · 2 cups — 17 cal</option>
-                    <option value="95|Edamame (½ cup shelled)">Edamame · ½ cup shelled — 95 cal</option>
-                    <option value="19|Radishes (1 cup)">Radishes · 1 cup — 19 cal</option>
-                    <option value="38|Beets (½ cup cooked)">Beets · ½ cup cooked — 38 cal</option>
-                  </optgroup>
-                  <optgroup label="Fruits">
-                    <option value="65|Black raspberries (1 cup)">Black raspberries · 1 cup — 65 cal</option>
-                    <option value="84|Blueberries (1 cup)">Blueberries · 1 cup — 84 cal</option>
-                    <option value="49|Strawberries (1 cup)">Strawberries · 1 cup — 49 cal</option>
-                    <option value="95|Apple (1 medium)">Apple · 1 medium — 95 cal</option>
-                    <option value="105|Banana (1 medium)">Banana · 1 medium — 105 cal</option>
-                    <option value="62|Orange (1 medium)">Orange · 1 medium — 62 cal</option>
-                    <option value="104|Grapes (1 cup)">Grapes · 1 cup — 104 cal</option>
-                    <option value="46|Watermelon (1 cup diced)">Watermelon · 1 cup diced — 46 cal</option>
-                    <option value="59|Peach (1 medium)">Peach · 1 medium — 59 cal</option>
-                    <option value="82|Pineapple (1 cup)">Pineapple · 1 cup — 82 cal</option>
-                    <option value="37|Grapefruit (½ medium)">Grapefruit · ½ medium — 37 cal</option>
-                    <option value="67|Cherries (1 cup)">Cherries · 1 cup — 67 cal</option>
-                    <option value="60|Mango (½ cup)">Mango · ½ cup — 60 cal</option>
-                    <option value="42|Kiwi (1 medium)">Kiwi · 1 medium — 42 cal</option>
-                    <option value="86|Pear (1 medium)">Pear · 1 medium — 86 cal</option>
-                    <option value="54|Cantaloupe (1 cup)">Cantaloupe · 1 cup — 54 cal</option>
-                    <option value="32|Raspberries (½ cup)">Raspberries · ½ cup — 32 cal</option>
-                  </optgroup>
-                  <optgroup label="Proteins &amp; Meats">
-                    <option value="187|Chicken breast, cooked (4 oz)">Chicken breast, cooked · 4 oz — 187 cal</option>
-                    <option value="70|Egg, whole (1 large)">Egg, whole · 1 large — 70 cal</option>
-                    <option value="234|Salmon fillet, cooked (4 oz)">Salmon fillet, cooked · 4 oz — 234 cal</option>
-                    <option value="199|Ground beef, 90% lean (4 oz)">Ground beef, 90% lean · 4 oz — 199 cal</option>
-                    <option value="153|Turkey breast, cooked (4 oz)">Turkey breast, cooked · 4 oz — 153 cal</option>
-                    <option value="73|Tuna, canned in water (3 oz)">Tuna, canned in water · 3 oz — 73 cal</option>
-                    <option value="136|Pork tenderloin, cooked (4 oz)">Pork tenderloin, cooked · 4 oz — 136 cal</option>
-                    <option value="85|Turkey sausage link (1 link)">Turkey sausage link · 1 link — 85 cal</option>
-                    <option value="112|Shrimp, cooked (4 oz)">Shrimp, cooked · 4 oz — 112 cal</option>
-                    <option value="111|Tilapia, cooked (4 oz)">Tilapia, cooked · 4 oz — 111 cal</option>
-                    <option value="93|Cod, cooked (4 oz)">Cod, cooked · 4 oz — 93 cal</option>
-                    <option value="149|Sirloin steak, lean (4 oz)">Sirloin steak, lean · 4 oz — 149 cal</option>
-                    <option value="110|Canned chickpeas (½ cup)">Canned chickpeas · ½ cup — 110 cal</option>
-                    <option value="170|Chicken thigh, cooked (4 oz)">Chicken thigh, cooked · 4 oz — 170 cal</option>
-                  </optgroup>
-                  <optgroup label="Dairy &amp; Nuts">
-                    <option value="130|Greek yogurt, plain 2% (¾ cup)">Greek yogurt, plain 2% · ¾ cup — 130 cal</option>
-                    <option value="80|String cheese (1 stick)">String cheese · 1 stick — 80 cal</option>
-                    <option value="164|Almonds (1 oz)">Almonds · 1 oz — 164 cal</option>
-                    <option value="185|Walnuts (1 oz)">Walnuts · 1 oz — 185 cal</option>
-                    <option value="119|Olive oil (1 tbsp)">Olive oil · 1 tbsp — 119 cal</option>
-                    <option value="102|Cottage cheese, low-fat (½ cup)">Cottage cheese, low-fat · ½ cup — 102 cal</option>
-                    <option value="100|Cheddar cheese (1 oz)">Cheddar cheese · 1 oz — 100 cal</option>
-                    <option value="190|Peanut butter (2 tbsp)">Peanut butter · 2 tbsp — 190 cal</option>
-                    <option value="160|Cashews (1 oz)">Cashews · 1 oz — 160 cal</option>
-                    <option value="165|Sunflower seeds (1 oz)">Sunflower seeds · 1 oz — 165 cal</option>
-                  </optgroup>
-                  <optgroup label="Grains &amp; Legumes">
-                    <option value="108|Brown rice, cooked (½ cup)">Brown rice, cooked · ½ cup — 108 cal</option>
-                    <option value="111|Quinoa, cooked (½ cup)">Quinoa, cooked · ½ cup — 111 cal</option>
-                    <option value="150|Steel-cut oats, dry (½ cup)">Steel-cut oats, dry · ½ cup — 150 cal</option>
-                    <option value="114|Black beans, cooked (½ cup)">Black beans, cooked · ½ cup — 114 cal</option>
-                    <option value="115|Lentils, cooked (½ cup)">Lentils, cooked · ½ cup — 115 cal</option>
-                    <option value="77|Corn tortilla (2 small)">Corn tortilla · 2 small — 77 cal</option>
-                    <option value="69|Whole grain bread (1 slice)">Whole grain bread · 1 slice — 69 cal</option>
-                  </optgroup>
-                </select>
+              <label for="mFoodSearch">Food</label>
+              <div class="fp-wrap" id="fpWrap">
+                <div class="fp-input-row">
+                  <input type="text" id="mFoodSearch" placeholder="Type to search…" autocomplete="off">
+                  <button class="fp-clear-btn" id="fpClearBtn" hidden title="Clear">✕</button>
+                </div>
+                <div class="fp-dropdown" id="fpDropdown" hidden></div>
+                <input type="hidden" id="mName">
               </div>
             </div>
             <div><label for="mCals">Calories <span style="font-size:.65rem;color:var(--text-2)">(auto-filled, adjustable)</span></label><input type="number" id="mCals" placeholder="auto-filled" min="0" max="9999"></div>
@@ -932,24 +889,153 @@ document.getElementById('logWeightBtn')?.addEventListener('click', () => {
   toast('Weight logged');
 });
 
-document.getElementById('mName')?.addEventListener('change', () => {
-  const sel = document.getElementById('mName');
-  if (!sel.value) return;
-  const cal = parseInt(sel.value.split('|')[0]);
-  if (!isNaN(cal)) document.getElementById('mCals').value = cal;
-});
+// ── Food picker ───────────────────────────────────────────
+const FOODS = [
+  {g:'Vegetables', n:'Cucumber (1 cup sliced)', c:16},
+  {g:'Vegetables', n:'Cherry tomatoes (1 cup)', c:27},
+  {g:'Vegetables', n:'Avocado (½ medium)', c:120},
+  {g:'Vegetables', n:'Baby carrots (1 cup)', c:52},
+  {g:'Vegetables', n:'Broccoli, cooked (1 cup)', c:55},
+  {g:'Vegetables', n:'Celery (1 cup)', c:16},
+  {g:'Vegetables', n:'Spinach, raw (2 cups)', c:14},
+  {g:'Vegetables', n:'Bell pepper (1 medium)', c:31},
+  {g:'Vegetables', n:'Zucchini (1 cup sliced)', c:21},
+  {g:'Vegetables', n:'Asparagus (1 cup)', c:27},
+  {g:'Vegetables', n:'Green beans (1 cup)', c:44},
+  {g:'Vegetables', n:'Kale, raw (1 cup)', c:33},
+  {g:'Vegetables', n:'Cauliflower (1 cup)', c:25},
+  {g:'Vegetables', n:'Sweet potato (1 medium)', c:103},
+  {g:'Vegetables', n:'Mushrooms, sliced (1 cup)', c:18},
+  {g:'Vegetables', n:'Onion (½ cup chopped)', c:20},
+  {g:'Vegetables', n:'Romaine lettuce (2 cups)', c:17},
+  {g:'Vegetables', n:'Edamame (½ cup shelled)', c:95},
+  {g:'Vegetables', n:'Radishes (1 cup)', c:19},
+  {g:'Vegetables', n:'Beets (½ cup cooked)', c:38},
+  {g:'Fruits', n:'Black raspberries (1 cup)', c:65},
+  {g:'Fruits', n:'Blueberries (1 cup)', c:84},
+  {g:'Fruits', n:'Strawberries (1 cup)', c:49},
+  {g:'Fruits', n:'Apple (1 medium)', c:95},
+  {g:'Fruits', n:'Banana (1 medium)', c:105},
+  {g:'Fruits', n:'Orange (1 medium)', c:62},
+  {g:'Fruits', n:'Grapes (1 cup)', c:104},
+  {g:'Fruits', n:'Watermelon (1 cup diced)', c:46},
+  {g:'Fruits', n:'Peach (1 medium)', c:59},
+  {g:'Fruits', n:'Pineapple (1 cup)', c:82},
+  {g:'Fruits', n:'Grapefruit (½ medium)', c:37},
+  {g:'Fruits', n:'Cherries (1 cup)', c:67},
+  {g:'Fruits', n:'Mango (½ cup)', c:60},
+  {g:'Fruits', n:'Kiwi (1 medium)', c:42},
+  {g:'Fruits', n:'Pear (1 medium)', c:86},
+  {g:'Fruits', n:'Cantaloupe (1 cup)', c:54},
+  {g:'Fruits', n:'Raspberries (½ cup)', c:32},
+  {g:'Proteins & Meats', n:'Chicken breast, cooked (4 oz)', c:187},
+  {g:'Proteins & Meats', n:'Egg, whole (1 large)', c:70},
+  {g:'Proteins & Meats', n:'Salmon fillet, cooked (4 oz)', c:234},
+  {g:'Proteins & Meats', n:'Ground beef, 90% lean (4 oz)', c:199},
+  {g:'Proteins & Meats', n:'Turkey breast, cooked (4 oz)', c:153},
+  {g:'Proteins & Meats', n:'Tuna, canned in water (3 oz)', c:73},
+  {g:'Proteins & Meats', n:'Pork tenderloin, cooked (4 oz)', c:136},
+  {g:'Proteins & Meats', n:'Turkey sausage link (1 link)', c:85},
+  {g:'Proteins & Meats', n:'Shrimp, cooked (4 oz)', c:112},
+  {g:'Proteins & Meats', n:'Tilapia, cooked (4 oz)', c:111},
+  {g:'Proteins & Meats', n:'Cod, cooked (4 oz)', c:93},
+  {g:'Proteins & Meats', n:'Sirloin steak, lean (4 oz)', c:149},
+  {g:'Proteins & Meats', n:'Canned chickpeas (½ cup)', c:110},
+  {g:'Proteins & Meats', n:'Chicken thigh, cooked (4 oz)', c:170},
+  {g:'Dairy & Nuts', n:'Greek yogurt, plain 2% (¾ cup)', c:130},
+  {g:'Dairy & Nuts', n:'String cheese (1 stick)', c:80},
+  {g:'Dairy & Nuts', n:'Almonds (1 oz)', c:164},
+  {g:'Dairy & Nuts', n:'Walnuts (1 oz)', c:185},
+  {g:'Dairy & Nuts', n:'Olive oil (1 tbsp)', c:119},
+  {g:'Dairy & Nuts', n:'Cottage cheese, low-fat (½ cup)', c:102},
+  {g:'Dairy & Nuts', n:'Cheddar cheese (1 oz)', c:100},
+  {g:'Dairy & Nuts', n:'Peanut butter (2 tbsp)', c:190},
+  {g:'Dairy & Nuts', n:'Cashews (1 oz)', c:160},
+  {g:'Dairy & Nuts', n:'Sunflower seeds (1 oz)', c:165},
+  {g:'Grains & Legumes', n:'Brown rice, cooked (½ cup)', c:108},
+  {g:'Grains & Legumes', n:'Quinoa, cooked (½ cup)', c:111},
+  {g:'Grains & Legumes', n:'Steel-cut oats, dry (½ cup)', c:150},
+  {g:'Grains & Legumes', n:'Black beans, cooked (½ cup)', c:114},
+  {g:'Grains & Legumes', n:'Lentils, cooked (½ cup)', c:115},
+  {g:'Grains & Legumes', n:'Corn tortilla (2 small)', c:77},
+  {g:'Grains & Legumes', n:'Whole grain bread (1 slice)', c:69},
+];
+
+(function() {
+  const searchEl  = document.getElementById('mFoodSearch');
+  const dropdown  = document.getElementById('fpDropdown');
+  const clearBtn  = document.getElementById('fpClearBtn');
+  const hiddenEl  = document.getElementById('mName');
+  const calEl     = document.getElementById('mCals');
+  const wrap      = document.getElementById('fpWrap');
+  if (!searchEl) return;
+
+  function renderDropdown(q) {
+    const lq = q.toLowerCase();
+    const filtered = lq ? FOODS.filter(f => f.n.toLowerCase().includes(lq)) : FOODS;
+    if (!filtered.length) {
+      dropdown.innerHTML = '<div class="fp-no-results">No matches — try a shorter term</div>';
+      dropdown.hidden = false; return;
+    }
+    const groups = {};
+    filtered.forEach(f => { (groups[f.g] = groups[f.g] || []).push(f); });
+    dropdown.innerHTML = Object.entries(groups).map(([g, foods]) =>
+      '<div class="fp-group-label">' + esc(g) + '</div>' +
+      foods.map(f =>
+        '<div class="fp-option" data-n="' + esc(f.n) + '" data-c="' + f.c + '">' +
+        '<span class="fp-option-name">' + esc(f.n) + '</span>' +
+        '<span class="fp-option-cal">' + f.c + ' cal</span></div>'
+      ).join('')
+    ).join('');
+    dropdown.hidden = false;
+  }
+
+  searchEl.addEventListener('focus', () => renderDropdown(searchEl.value));
+  searchEl.addEventListener('input', () => {
+    hiddenEl.value = '';
+    clearBtn.hidden = !searchEl.value;
+    renderDropdown(searchEl.value);
+  });
+
+  dropdown.addEventListener('mousedown', e => {
+    const opt = e.target.closest('.fp-option');
+    if (!opt) return;
+    e.preventDefault();
+    const name = opt.dataset.n;
+    const cal  = parseInt(opt.dataset.c);
+    hiddenEl.value  = cal + '|' + name;
+    searchEl.value  = name;
+    calEl.value     = cal;
+    clearBtn.hidden = false;
+    dropdown.hidden = true;
+  });
+
+  clearBtn.addEventListener('click', () => {
+    hiddenEl.value  = '';
+    searchEl.value  = '';
+    calEl.value     = '';
+    clearBtn.hidden = true;
+    dropdown.hidden = true;
+    searchEl.focus();
+  });
+
+  document.addEventListener('click', e => {
+    if (!wrap.contains(e.target)) dropdown.hidden = true;
+  });
+})();
 
 document.getElementById('logMealBtn')?.addEventListener('click', () => {
   const date  = document.getElementById('mDate').value;
-  const sel   = document.getElementById('mName');
-  const parts = sel.value.split('|');
+  const parts = (document.getElementById('mName').value || '').split('|');
   const name  = parts[1] || '';
   const cals  = parseInt(document.getElementById('mCals').value);
-  if (!date || !name || isNaN(cals) || cals < 0) { toast('Select a food and set a date'); return; }
+  if (!date || !name || isNaN(cals) || cals < 0) { toast('Search and select a food first'); return; }
   data.meals.push({ id: uid(), date, name, calories: cals });
   saveData();
-  sel.value = '';
-  document.getElementById('mCals').value = '';
+  document.getElementById('mName').value     = '';
+  document.getElementById('mFoodSearch').value = '';
+  document.getElementById('fpClearBtn').hidden = true;
+  document.getElementById('mCals').value     = '';
   render();
   toast('Meal added');
 });
