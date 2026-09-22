@@ -424,6 +424,43 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 .hist-table td.down { color: var(--accent); }
 .hist-table td.up   { color: var(--danger); }
 
+/* ── Goal Progress Section ───────────────────────────────── */
+.goal-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:24px;margin-top:14px;}
+.goal-section-top{display:flex;align-items:baseline;gap:14px;margin-bottom:20px;flex-wrap:wrap;}
+.goal-section-title{font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+.goal-section-sub{font-size:.72rem;color:var(--text-2);letter-spacing:.06em;text-transform:uppercase;}
+.goal-bar-wrap{margin-bottom:24px;}
+.goal-bar-ends{display:flex;justify-content:space-between;margin-bottom:6px;font-family:'Oswald',sans-serif;font-size:.8rem;color:var(--text-2);font-variant-numeric:tabular-nums;}
+.goal-bar-track{position:relative;height:14px;background:var(--surface-2);border-radius:7px;overflow:visible;margin-bottom:20px;}
+.goal-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#0AB88C);border-radius:7px;transition:width .6s ease;position:relative;min-width:0;}
+.goal-bar-fill::after{content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;background:var(--accent);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--accent);}
+.goal-ms-dots{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;}
+.goal-ms-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;border:2px solid var(--bg);transition:background .4s;}
+.goal-ms-dot.hit{background:var(--accent);}
+.goal-ms-dot.pending{background:var(--border);}
+.goal-ms-labels{position:relative;height:18px;}
+.goal-ms-lbl{position:absolute;transform:translateX(-50%);font-family:'Oswald',sans-serif;font-size:.66rem;color:var(--text-2);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.goal-ms-lbl.hit{color:var(--accent);}
+.goal-stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:20px;}
+@media(max-width:600px){.goal-stats-row{grid-template-columns:repeat(3,1fr);}}
+.goal-stat-cell{background:var(--surface);padding:14px 12px;text-align:center;}
+.goal-stat-val{font-family:'Oswald',sans-serif;font-size:1.4rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:5px;}
+.goal-stat-lbl{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2);}
+.goal-ms-list{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:16px;}
+.goal-ms-item{display:flex;align-items:center;gap:14px;padding:11px 16px;background:var(--surface);border-bottom:1px solid var(--border);}
+.goal-ms-item:last-child{border-bottom:none;}
+.goal-ms-item.hit{background:var(--accent-a);}
+.goal-ms-item.current{background:var(--cal-a);}
+.goal-ms-num{font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:600;font-variant-numeric:tabular-nums;min-width:60px;}
+.goal-ms-item.hit .goal-ms-num{color:var(--accent);}
+.goal-ms-item.current .goal-ms-num{color:var(--cal);}
+.goal-ms-icon{width:20px;text-align:center;font-size:.82rem;color:var(--text-2);}
+.goal-ms-item.hit .goal-ms-icon{color:var(--accent);}
+.goal-ms-item.current .goal-ms-icon{color:var(--cal);}
+.goal-ms-name{font-size:.84rem;font-weight:600;margin-bottom:1px;}
+.goal-ms-note{font-size:.78rem;color:var(--text-2);}
+.goal-projection{font-size:.82rem;color:var(--text-2);font-style:italic;text-align:center;padding-top:4px;}
+
 /* ── Toast ────────────────────────────────────────────── */
 .toast {
   position: fixed;
@@ -583,6 +620,52 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
     </div>
   </div>
 
+</div>
+
+<!-- ── Progress to 225 ── -->
+<div class="goal-section">
+  <div class="goal-section-top">
+    <div class="goal-section-title">Progress to 225</div>
+    <div class="goal-section-sub">Jeff's 225 Program · 6 months</div>
+  </div>
+
+  <div class="goal-bar-wrap">
+    <div class="goal-bar-ends">
+      <span id="goalStartLbl">— start</span>
+      <span>225 lbs — goal</span>
+    </div>
+    <div class="goal-bar-track">
+      <div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div>
+      <div class="goal-ms-dots" id="goalMsDots"></div>
+    </div>
+    <div class="goal-ms-labels" id="goalMsLabels"></div>
+  </div>
+
+  <div class="goal-stats-row">
+    <div class="goal-stat-cell">
+      <div class="goal-stat-val" id="gStatStart">—</div>
+      <div class="goal-stat-lbl">Start</div>
+    </div>
+    <div class="goal-stat-cell">
+      <div class="goal-stat-val" id="gStatCurrent" style="color:var(--cal)">—</div>
+      <div class="goal-stat-lbl">Current</div>
+    </div>
+    <div class="goal-stat-cell">
+      <div class="goal-stat-val" id="gStatLost" style="color:var(--accent)">—</div>
+      <div class="goal-stat-lbl">Lost</div>
+    </div>
+    <div class="goal-stat-cell">
+      <div class="goal-stat-val" id="gStatToGo">—</div>
+      <div class="goal-stat-lbl">To Go</div>
+    </div>
+    <div class="goal-stat-cell">
+      <div class="goal-stat-val" id="gStatPct" style="color:var(--accent)">—</div>
+      <div class="goal-stat-lbl">Complete</div>
+    </div>
+  </div>
+
+  <div class="goal-ms-list" id="goalMsList"></div>
+  <div class="goal-projection" id="goalProjection"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -852,6 +935,7 @@ function render() {
   renderHistory(sorted);
   renderWeightChart(sorted);
   renderCalChart();
+  renderGoalProgress(sorted, latest);
 }
 
 function renderHistory(sorted) {
@@ -888,6 +972,84 @@ document.getElementById('logWeightBtn')?.addEventListener('click', () => {
   render();
   toast('Weight logged');
 });
+
+// ── Goal progress ─────────────────────────────────────────
+function renderGoalProgress(sorted, latest) {
+  const GOAL    = 225;
+  const startW  = sorted.length ? sorted[0].weight : 245.7;
+  const currentW = latest ? latest.weight : startW;
+  const totalRange = startW - GOAL;
+  const lost    = Math.max(0, startW - currentW);
+  const toGo    = Math.max(0, currentW - GOAL);
+  const pct     = totalRange > 0 ? Math.min(100, (lost / totalRange) * 100) : 0;
+
+  document.getElementById('goalStartLbl').textContent  = startW.toFixed(1) + ' lbs — start';
+  document.getElementById('goalBarFill').style.width   = pct.toFixed(1) + '%';
+  document.getElementById('gStatStart').textContent    = startW.toFixed(1);
+  document.getElementById('gStatCurrent').textContent  = currentW.toFixed(1);
+  document.getElementById('gStatLost').textContent     = lost > 0 ? '−' + lost.toFixed(1) : '0';
+  document.getElementById('gStatToGo').textContent     = toGo.toFixed(1);
+  document.getElementById('gStatPct').textContent      = pct.toFixed(0) + '%';
+
+  // milestone dots on the bar
+  const msDots   = [{w:240},{w:235},{w:230},{w:225}].filter(m => m.w < startW);
+  const dotsEl   = document.getElementById('goalMsDots');
+  const labelsEl = document.getElementById('goalMsLabels');
+  dotsEl.innerHTML = labelsEl.innerHTML = '';
+  msDots.forEach(m => {
+    const p   = ((startW - m.w) / totalRange) * 100;
+    const hit = currentW <= m.w;
+    const dot = document.createElement('div');
+    dot.className = 'goal-ms-dot ' + (hit ? 'hit' : 'pending');
+    dot.style.left = p.toFixed(1) + '%';
+    dotsEl.appendChild(dot);
+    const lbl = document.createElement('div');
+    lbl.className = 'goal-ms-lbl' + (hit ? ' hit' : '');
+    lbl.style.left = p.toFixed(1) + '%';
+    lbl.textContent = m.w + ' lbs';
+    labelsEl.appendChild(lbl);
+  });
+
+  // milestone rows
+  const milestones = [
+    { w: 240, name: 'First 5 lbs gone',  note: 'The habit is forming. Momentum is real.' },
+    { w: 235, name: '10 lbs down',        note: 'Halfway. Clothes are starting to fit differently.' },
+    { w: 230, name: '15 lbs down',        note: 'People are noticing. Keep going.' },
+    { w: 225, name: '225 — Goal Reached', note: 'Victory. The diabetes risk is off the table.' },
+  ].filter(m => m.w <= Math.ceil(startW));
+
+  document.getElementById('goalMsList').innerHTML = milestones.map(m => {
+    const hit     = currentW <= m.w;
+    const current = !hit && currentW <= m.w + 5;
+    const cls     = hit ? 'hit' : current ? 'current' : '';
+    const icon    = hit ? '✓' : current ? '→' : '○';
+    return '<div class="goal-ms-item ' + cls + '">'
+      + '<span class="goal-ms-num">' + m.w + ' lbs</span>'
+      + '<span class="goal-ms-icon">' + icon + '</span>'
+      + '<div><div class="goal-ms-name">' + esc(m.name) + '</div>'
+      + '<div class="goal-ms-note">' + esc(m.note) + '</div></div></div>';
+  }).join('');
+
+  // projected finish
+  const projEl = document.getElementById('goalProjection');
+  if (toGo <= 0) {
+    projEl.textContent = 'Goal reached — 225 lbs. Well done, Jeff.';
+  } else if (sorted.length >= 2) {
+    const first = sorted[0], last = sorted[sorted.length - 1];
+    const days  = Math.max(1, (new Date(last.date + 'T12:00:00Z') - new Date(first.date + 'T12:00:00Z')) / 86400000);
+    const rate  = (first.weight - last.weight) / days;
+    if (rate > 0) {
+      const eta = new Date();
+      eta.setDate(eta.getDate() + Math.round(toGo / rate));
+      const mo  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][eta.getMonth()];
+      projEl.textContent = 'At current rate (' + rate.toFixed(2) + ' lbs/day), projected goal: ' + mo + ' ' + eta.getFullYear() + '.';
+    } else {
+      projEl.textContent = 'Trending flat — log more weigh-ins to see a projection.';
+    }
+  } else {
+    projEl.textContent = 'Log more weigh-ins to see a projected finish date.';
+  }
+}
 
 // ── Food picker ───────────────────────────────────────────
 const FOODS = [
