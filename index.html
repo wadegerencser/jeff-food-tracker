@@ -1090,7 +1090,7 @@ function renderGoalProgress(sorted, latest) {
   document.getElementById('goalBarFill').style.width   = pct.toFixed(1) + '%';
   document.getElementById('gStatStart').textContent    = startW.toFixed(1);
   document.getElementById('gStatCurrent').textContent  = currentW.toFixed(1);
-  document.getElementById('gStatLost').textContent     = lost > 0 ? '−' + lost.toFixed(1) : '0';
+  document.getElementById('gStatLost').textContent     = lost > 0 ? '−' + lost.toFixed(1) : '0.0';
   document.getElementById('gStatToGo').textContent     = toGo.toFixed(1);
   document.getElementById('gStatPct').textContent      = pct.toFixed(0) + '%';
 

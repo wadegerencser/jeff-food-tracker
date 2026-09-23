@@ -1,6 +1,6 @@
-# jeff-food-tracker
+# Jeff's Diet Program
 
-> A personal calorie and weight tracker for Jeff, built to support a 35-lb weight loss goal before a type 2 diabetes diagnosis forces a career change.
+> Jeff's personal calorie and weight tracker — built for one person and one goal. Not a general-purpose app.
 
 ## Business Problem
 
@@ -12,11 +12,7 @@ Jeff is on the verge of a type 2 diabetes diagnosis. If his weight doesn't come 
 
 ## How
 
-Single-file HTML app (no server, no account) that logs daily weigh-ins and
-meals with calorie counts. Weight trend and daily calorie data are charted.
-Data lives in the browser via `localStorage`; a share link encodes the current
-dataset into the URL so Jeff can view his progress on any device without
-needing an account or sync service.
+Single-file HTML app (no server, no account) built exclusively for Jeff that logs daily weigh-ins (to the tenth of a pound, e.g. 243.6 lbs) and meals with calorie counts. Weight trend and daily calorie data are charted. Data lives in the browser via `localStorage`; a share link encodes the current dataset into the URL so Jeff can view his progress on any device without needing an account or sync service.
 
 ## Not This
 
