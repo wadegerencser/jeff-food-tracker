@@ -821,7 +821,9 @@ function saveData() {
 }
 
 // ── Utils ─────────────────────────────────────────────────
-function todayStr() { return new Date().toISOString().split('T')[0]; }
+// Arizona (America/Phoenix) is fixed at UTC-7 year-round — no DST — so this
+// stays correct regardless of what timezone Wade's or Jeff's device is set to.
+function todayStr() { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Phoenix' }); }
 
 function dayNum(d) {
   const s = new Date(PROTOCOL_START + 'T12:00:00Z');
@@ -926,8 +928,8 @@ function renderCalChart() {
   const goal = data.goal || 1500;
 
   const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
+    const d = new Date(todayStr() + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() - (6 - i));
     return d.toISOString().split('T')[0];
   });
 
@@ -1142,10 +1144,10 @@ function renderGoalProgress(sorted, latest) {
     const days  = Math.max(1, (new Date(last.date + 'T12:00:00Z') - new Date(first.date + 'T12:00:00Z')) / 86400000);
     const rate  = (first.weight - last.weight) / days;
     if (rate > 0) {
-      const eta = new Date();
-      eta.setDate(eta.getDate() + Math.round(toGo / rate));
-      const mo  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][eta.getMonth()];
-      projEl.textContent = 'At current rate (' + rate.toFixed(2) + ' lbs/day), projected goal: ' + mo + ' ' + eta.getFullYear() + '.';
+      const eta = new Date(todayStr() + 'T12:00:00Z');
+      eta.setUTCDate(eta.getUTCDate() + Math.round(toGo / rate));
+      const mo  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][eta.getUTCMonth()];
+      projEl.textContent = 'At current rate (' + rate.toFixed(2) + ' lbs/day), projected goal: ' + mo + ' ' + eta.getUTCFullYear() + '.';
     } else {
       projEl.textContent = 'Trending flat — log more weigh-ins to see a projection.';
     }
