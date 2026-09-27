@@ -118,6 +118,11 @@ body {
   padding: 3px 10px;
   border-radius: 4px;
 }
+.streak-badge {
+  background: var(--cal-a);
+  color: var(--cal);
+  border: 1px solid var(--cal);
+}
 .protocol-label {
   font-size: .76rem;
   letter-spacing: .06em;
@@ -225,34 +230,41 @@ body {
   margin-bottom: 12px;
 }
 .cal-bar-wrap { margin-bottom: 16px; }
-.cal-bar-header {
+.cal-ring-wrap {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  margin: 4px auto 12px;
+}
+.cal-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.cal-ring-track { fill: none; stroke: var(--surface-2); stroke-width: 10; }
+.cal-ring-fill {
+  fill: none;
+  stroke: var(--cal);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset .4s ease, stroke .3s ease;
+}
+.cal-ring-fill.over { stroke: var(--danger); }
+.cal-ring-center {
+  position: absolute;
+  inset: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 5px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .cal-num {
   font-family: 'Oswald', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--cal);
+  color: var(--text);
+  line-height: 1;
 }
-.cal-goal-text { font-size: .76rem; color: var(--text-2); }
-.progress-track {
-  height: 5px;
-  background: var(--surface-2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: var(--cal);
-  border-radius: 3px;
-  transition: width .3s ease;
-}
-.progress-fill.over { background: var(--danger); }
-.cal-remain { font-size: .76rem; color: var(--text-2); margin-top: 4px; }
+.cal-ring-unit { font-size: .72rem; color: var(--text-2); margin-top: 2px; letter-spacing: .06em; text-transform: uppercase; }
+.cal-goal-text { font-size: .76rem; color: var(--text-2); text-align: center; display: block; }
+.cal-remain { font-size: .76rem; color: var(--text-2); margin-top: 4px; text-align: center; }
 .cal-remain.over { color: var(--danger); }
 
 /* ── Meals list ───────────────────────────────────────── */
@@ -298,12 +310,23 @@ body {
 /* ── Forms ────────────────────────────────────────────── */
 .log-forms {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
   gap: 14px;
   margin-top: 14px;
 }
 @media (max-width: 580px) { .log-forms { grid-template-columns: 1fr; } }
 .form-col { display: flex; flex-direction: column; gap: 8px; }
+.meal-budget-nudge {
+  font-size: .82rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  background: var(--accent-a);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.meal-budget-nudge.over { background: rgba(232,64,64,.12); color: var(--danger); border-color: var(--danger); }
 label {
   font-size: .7rem;
   letter-spacing: .08em;
@@ -475,6 +498,64 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 .goal-ms-note{font-size:.78rem;color:var(--text-2);}
 .goal-projection{font-size:.82rem;color:var(--text-2);font-style:italic;text-align:center;padding-top:4px;}
 
+/* ── Meal checklist pills ─────────────────────────────── */
+.meal-checklist {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.meal-pill {
+  font-family: 'Oswald', sans-serif;
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  background: var(--surface-2);
+}
+.meal-pill.done {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-a);
+}
+
+/* ── Meal group headers in Today's Food ───────────────── */
+.meal-group-label {
+  font-size: .66rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  font-weight: 600;
+  padding: 8px 2px 4px;
+}
+.meal-group-label:first-child { padding-top: 0; }
+.meal-time {
+  font-size: .74rem;
+  color: var(--text-2);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Weekly zone banner ───────────────────────────────── */
+.zone-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: .84rem;
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+.zone-banner.green { border-color: var(--accent); background: var(--accent-a); color: var(--accent); }
+.zone-banner.red   { border-color: var(--danger); background: rgba(232,64,64,.12); color: var(--danger); }
+.zone-emoji { font-size: 1rem; line-height: 1; }
+
 /* ── Toast ────────────────────────────────────────────── */
 .toast {
   position: fixed;
@@ -524,6 +605,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 <header class="header">
   <div class="header-title">Jeff<em>'s</em> Tracker</div>
   <div class="day-badge" id="dayBadge">Day —</div>
+  <div class="day-badge streak-badge" id="streakBadge" hidden>🔥 —</div>
   <div class="protocol-label" id="protocolLabel">Protocol</div>
   <div class="header-actions" id="headerActions">
     <button class="icon-btn" id="shareBtn">Share link</button>
@@ -541,6 +623,10 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
   <div class="sf">
     <label for="protocolInput">Protocol Name</label>
     <input type="text" id="protocolInput" style="width:220px">
+  </div>
+  <div class="sf">
+    <label for="weeklyGoalInput">Weekly Loss Goal (lbs)</label>
+    <input type="number" id="weeklyGoalInput" style="width:110px" min="0.5" max="5" step="0.1">
   </div>
   <div class="sf" style="justify-content:flex-end">
     <button class="btn btn-green" style="width:auto;padding:8px 22px" id="saveSettings">Save</button>
@@ -597,8 +683,20 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 
         <div class="card">
           <div class="card-title">Add Meal</div>
+          <div class="meal-budget-nudge" id="mealBudgetNudge">—</div>
           <div class="form-col">
             <div><label for="mDate">Date</label><input type="date" id="mDate"></div>
+            <div style="display:flex;gap:8px">
+              <div style="flex:1"><label for="mMealType">Meal</label>
+                <select id="mMealType">
+                  <option value="breakfast">Breakfast</option>
+                  <option value="lunch">Lunch</option>
+                  <option value="dinner">Dinner</option>
+                  <option value="snack">Snack</option>
+                </select>
+              </div>
+              <div style="flex:1"><label for="mTime">Time</label><input type="time" id="mTime"></div>
+            </div>
             <div>
               <label for="mFoodSearch">Food</label>
               <div class="fp-wrap" id="fpWrap">
@@ -612,6 +710,27 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
             </div>
             <div><label for="mCals">Calories <span style="font-size:.65rem;color:var(--text-2)">(auto-filled, adjustable)</span></label><input type="number" id="mCals" placeholder="auto-filled" min="0" max="9999"></div>
             <button class="btn btn-orange" id="logMealBtn">Add Meal</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Log Exercise</div>
+          <div class="form-col">
+            <div><label for="eDate">Date</label><input type="date" id="eDate"></div>
+            <div>
+              <label for="eActSearch">Activity <span style="font-size:.65rem;color:var(--text-2)">(optional)</span></label>
+              <div class="fp-wrap" id="eActWrap">
+                <div class="fp-input-row">
+                  <input type="text" id="eActSearch" placeholder="Type to search…" autocomplete="off">
+                  <button class="fp-clear-btn" id="eActClear" hidden title="Clear">✕</button>
+                </div>
+                <div class="fp-dropdown" id="eActDropdown" hidden></div>
+                <input type="hidden" id="eAct">
+              </div>
+            </div>
+            <div><label for="eDuration">Duration (minutes)</label><input type="number" id="eDuration" min="5" max="300" step="5" placeholder="30"></div>
+            <div><label for="eCals">Calories Burned <span style="font-size:.65rem;color:var(--text-2)">(auto-filled, adjustable)</span></label><input type="number" id="eCals" placeholder="0" min="0" max="9999"></div>
+            <button class="btn btn-green" id="logExerciseBtn">Log Exercise</button>
           </div>
         </div>
       </div>
@@ -635,17 +754,25 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
     <div class="card" style="position:sticky;top:16px">
       <div class="today-date-line" id="todayDateLine">—</div>
 
+      <div class="zone-banner" id="zoneBanner">
+        <span class="zone-emoji" id="zoneEmoji">🟢</span>
+        <span id="zoneText">—</span>
+      </div>
+
+      <div class="meal-checklist" id="mealChecklist"></div>
+
       <div class="cal-bar-wrap">
-        <div class="cal-bar-header">
-          <div>
+        <div class="cal-ring-wrap">
+          <svg class="cal-ring" viewBox="0 0 168 168">
+            <circle class="cal-ring-track" cx="84" cy="84" r="74"></circle>
+            <circle class="cal-ring-fill" id="calRingFill" cx="84" cy="84" r="74"></circle>
+          </svg>
+          <div class="cal-ring-center">
             <span class="cal-num" id="todayCalsNum">0</span>
-            <span style="font-size:.8rem;color:var(--text-2)"> cal</span>
+            <span class="cal-ring-unit">cal</span>
           </div>
-          <div class="cal-goal-text" id="calGoalText">Goal: 1500</div>
         </div>
-        <div class="progress-track">
-          <div class="progress-fill" id="progressFill" style="width:0%"></div>
-        </div>
+        <div class="cal-goal-text" id="calGoalText">Goal: 1500</div>
         <div class="cal-remain" id="calRemain">1500 remaining</div>
       </div>
 
@@ -727,8 +854,10 @@ const STORAGE_KEY    = 'jeff_tracker_v2';
 const DEFAULT_DATA   = {
   weights:  [{ date: '2026-09-22', weight: 245.7 }],
   meals:    [],
+  exercise: [],
   goal:     1500,
-  protocol: "Jeff's 225 Program"
+  protocol: "Jeff's 225 Program",
+  weeklyLossGoal: 1.5
 };
 
 let readOnly    = false;
@@ -782,12 +911,11 @@ function handleShareLink() {
     const d = JSON.parse(atob(window.location.hash.slice(6)));
     if (d && Array.isArray(d.weights)) {
       readOnly = true; data = d;
+      if (!Array.isArray(data.exercise)) data.exercise = [];
+      if (!data.weeklyLossGoal) data.weeklyLossGoal = DEFAULT_DATA.weeklyLossGoal;
       document.getElementById('roBanner').classList.add('show');
       document.getElementById('logSection').style.display  = 'none';
       document.getElementById('headerActions').style.display = 'none';
-      const td = todayStr();
-      if (document.getElementById('wDate')) document.getElementById('wDate').value = td;
-      if (document.getElementById('mDate')) document.getElementById('mDate').value = td;
       render();
     }
   } catch(e) {}
@@ -801,6 +929,8 @@ function listenFirestore() {
       if (!data.protocol) data.protocol = DEFAULT_DATA.protocol;
       if (!Array.isArray(data.meals))   data.meals   = [];
       if (!Array.isArray(data.weights)) data.weights = [];
+      if (!Array.isArray(data.exercise)) data.exercise = [];
+      if (!data.weeklyLossGoal) data.weeklyLossGoal = DEFAULT_DATA.weeklyLossGoal;
     } else {
       // First sign-in — migrate localStorage or use defaults
       const local = localStorage.getItem(STORAGE_KEY);
@@ -811,6 +941,8 @@ function listenFirestore() {
     const td = todayStr();
     if (document.getElementById('wDate')) document.getElementById('wDate').value = td;
     if (document.getElementById('mDate')) document.getElementById('mDate').value = td;
+    if (document.getElementById('eDate')) document.getElementById('eDate').value = td;
+    setDefaultMealTypeAndTime();
     render();
   }, err => console.error('Firestore error:', err));
 }
@@ -836,6 +968,41 @@ function fmtDate(d) {
 }
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function guessMealType() {
+  const h = new Date().getHours();
+  if (h < 11) return 'breakfast';
+  if (h < 15) return 'lunch';
+  if (h < 20) return 'dinner';
+  return 'snack';
+}
+
+function setDefaultMealTypeAndTime() {
+  const typeEl = document.getElementById('mMealType');
+  const timeEl = document.getElementById('mTime');
+  if (typeEl) typeEl.value = guessMealType();
+  if (timeEl) timeEl.value = new Date().toTimeString().slice(0,5);
+}
+
+function last7Days(td) {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(td + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() - (6 - i));
+    return d.toISOString().split('T')[0];
+  });
+}
+
+// Consecutive days (ending today) with at least 1 meal logged.
+function loggingStreak(td) {
+  const loggedDates = new Set(data.meals.map(m => m.date));
+  let streak = 0;
+  let cursor = new Date(td + 'T12:00:00Z');
+  while (loggedDates.has(cursor.toISOString().split('T')[0])) {
+    streak++;
+    cursor.setUTCDate(cursor.getUTCDate() - 1);
+  }
+  return streak;
+}
 
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -989,6 +1156,11 @@ function render() {
   document.getElementById('dayBadge').textContent    = 'Day ' + dayNum(td);
   document.getElementById('protocolLabel').textContent = data.protocol || 'Protocol';
 
+  const streak = loggingStreak(td);
+  const streakEl = document.getElementById('streakBadge');
+  streakEl.hidden = streak < 2;
+  streakEl.textContent = '🔥 ' + streak + '-day streak';
+
   const sorted = [...data.weights].sort((a,b) => a.date.localeCompare(b.date));
   const latest = sorted[sorted.length - 1];
   const first  = sorted[0];
@@ -1010,37 +1182,91 @@ function render() {
   document.getElementById('statCals').textContent    = todayCals;
   document.getElementById('statCalsUnit').textContent = '/ ' + goal + ' goal';
 
+  // Pre-meal budget nudge — shown right where Jeff is about to add a meal,
+  // so he sees his remaining budget before ordering, not after.
+  const nudgeEl  = document.getElementById('mealBudgetNudge');
+  const budgetLeft = goal - todayCals;
+  if (nudgeEl) {
+    nudgeEl.classList.toggle('over', budgetLeft < 0);
+    nudgeEl.textContent = budgetLeft >= 0
+      ? 'You have ' + budgetLeft + ' cal left for today before this meal.'
+      : 'Already ' + Math.abs(budgetLeft) + ' cal over today’s goal — heads up before adding more.';
+  }
+
   // Today panel
   document.getElementById('todayDateLine').textContent = fmtDate(td);
   document.getElementById('todayCalsNum').textContent  = todayCals;
   document.getElementById('calGoalText').textContent   = 'Goal: ' + goal;
 
-  const pct  = Math.min(100, Math.round((todayCals / goal) * 100));
-  const fill = document.getElementById('progressFill');
-  fill.style.width = pct + '%';
-  fill.classList.toggle('over', todayCals > goal);
+  const pct   = Math.min(100, Math.round((todayCals / goal) * 100));
+  const ring  = document.getElementById('calRingFill');
+  const CIRC  = 2 * Math.PI * 74;
+  ring.style.strokeDasharray  = CIRC.toFixed(1);
+  ring.style.strokeDashoffset = (CIRC * (1 - pct / 100)).toFixed(1);
+  ring.classList.toggle('over', todayCals > goal);
 
   const rem   = goal - todayCals;
   const remEl = document.getElementById('calRemain');
   remEl.textContent = rem > 0 ? rem + ' remaining' : rem === 0 ? 'Goal reached' : Math.abs(rem) + ' over goal';
   remEl.classList.toggle('over', rem < 0);
 
-  // Today meals list
+  // Today meals list — grouped by meal type, old entries default to snack
+  const MEAL_ORDER = ['breakfast','lunch','dinner','snack'];
+  const MEAL_LABEL = { breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner', snack:'Snack' };
   const list = document.getElementById('todayMeals');
-  list.innerHTML = todayMeals.length === 0
-    ? '<li class="empty-note">Nothing logged yet — fasting or no data</li>'
-    : todayMeals.map(m =>
-        `<li class="meal-item">
-          <span class="meal-name">${esc(m.name)}</span>
-          <span class="meal-cal">${m.calories} cal</span>
-          ${readOnly ? '' : `<button class="del-btn" data-id="${m.id}" title="Remove">✕</button>`}
-        </li>`
-      ).join('');
+  if (todayMeals.length === 0) {
+    list.innerHTML = '<li class="empty-note">Nothing logged yet — fasting or no data</li>';
+  } else {
+    list.innerHTML = MEAL_ORDER.map(type => {
+      const items = todayMeals.filter(m => (m.mealType || 'snack') === type);
+      if (!items.length) return '';
+      return '<li class="meal-group-label">' + MEAL_LABEL[type] + '</li>' +
+        items.map(m =>
+          `<li class="meal-item">
+            ${m.time ? `<span class="meal-time">${esc(m.time)}</span>` : ''}
+            <span class="meal-name">${esc(m.name)}</span>
+            <span class="meal-cal">${m.calories} cal</span>
+            ${readOnly ? '' : `<button class="del-btn" data-id="${m.id}" title="Remove">✕</button>`}
+          </li>`
+        ).join('');
+    }).join('');
+  }
+
+  // Meal checklist pills — main 3 checkpoints only
+  const checklistEl = document.getElementById('mealChecklist');
+  const CHECK_TYPES = [['breakfast','Breakfast'], ['lunch','Lunch'], ['dinner','Dinner']];
+  checklistEl.innerHTML = CHECK_TYPES.map(([type, label]) => {
+    const done = todayMeals.some(m => (m.mealType || 'snack') === type);
+    return `<span class="meal-pill${done ? ' done' : ''}">${label} ${done ? '✓' : '—'}</span>`;
+  }).join('');
 
   renderHistory(sorted);
   renderWeightChart(sorted);
   renderCalChart();
   renderGoalProgress(sorted, latest);
+  renderZoneBanner(td, goal);
+}
+
+// ── Weekly red/green zone ────────────────────────────────────
+function renderZoneBanner(td, goal) {
+  const days = last7Days(td);
+  const weeklyConsumed = data.meals.filter(m => days.includes(m.date)).reduce((s,m) => s + m.calories, 0);
+  const weeklyBurned   = data.exercise.filter(e => days.includes(e.date)).reduce((s,e) => s + e.calories, 0);
+  const weeklyAllowance = goal * 7 + weeklyBurned;
+  const weeklyBalance   = weeklyAllowance - weeklyConsumed;
+  const weeklyLossGoal  = data.weeklyLossGoal || 1.5;
+  const projectedLoss   = weeklyLossGoal + weeklyBalance / 3500;
+
+  const banner = document.getElementById('zoneBanner');
+  const emoji  = document.getElementById('zoneEmoji');
+  const text   = document.getElementById('zoneText');
+  const green  = weeklyBalance >= 0;
+
+  banner.classList.toggle('green', green);
+  banner.classList.toggle('red', !green);
+  emoji.textContent = green ? '🟢' : '🔴';
+  text.textContent = (green ? 'On pace' : 'Behind pace') +
+    ' — projected ' + projectedLoss.toFixed(1) + ' lbs this week (goal: ' + weeklyLossGoal.toFixed(1) + ' lbs/wk)';
 }
 
 function renderHistory(sorted) {
@@ -1228,6 +1454,27 @@ const FOODS = [
   {g:'Grains & Legumes', n:'Whole grain bread (1 slice)', c:69},
 ];
 
+// Calories per 30 minutes, for a ~245lb person (matches Jeff's tracked weight) — rounded estimates
+const EXERCISES = [
+  {g:'Cardio', n:'Walking', c:150},
+  {g:'Cardio', n:'Brisk walking', c:200},
+  {g:'Cardio', n:'Jogging', c:300},
+  {g:'Cardio', n:'Running', c:370},
+  {g:'Cardio', n:'Cycling, moderate', c:280},
+  {g:'Cardio', n:'Cycling, vigorous', c:400},
+  {g:'Cardio', n:'Swimming, moderate', c:330},
+  {g:'Cardio', n:'Elliptical', c:300},
+  {g:'Cardio', n:'Stair climbing', c:280},
+  {g:'Cardio', n:'Rowing machine', c:300},
+  {g:'Strength & Other', n:'Weightlifting, moderate', c:180},
+  {g:'Strength & Other', n:'Weightlifting, vigorous', c:250},
+  {g:'Strength & Other', n:'Bodyweight/calisthenics', c:200},
+  {g:'Strength & Other', n:'Yoga', c:120},
+  {g:'Strength & Other', n:'Stretching', c:90},
+  {g:'Strength & Other', n:'Yard work/gardening', c:200},
+  {g:'Strength & Other', n:'House cleaning', c:130},
+];
+
 (function() {
   const searchEl  = document.getElementById('mFoodSearch');
   const dropdown  = document.getElementById('fpDropdown');
@@ -1237,16 +1484,39 @@ const FOODS = [
   const wrap      = document.getElementById('fpWrap');
   if (!searchEl) return;
 
+  // Last 5 distinct foods Jeff has actually logged, most recent first —
+  // surfaced above the alphabetical groups so repeat meals are a 1-tap log.
+  function recentFoods() {
+    const seen = new Set();
+    const out  = [];
+    for (let i = data.meals.length - 1; i >= 0 && out.length < 5; i--) {
+      const m = data.meals[i];
+      if (seen.has(m.name)) continue;
+      seen.add(m.name);
+      out.push({ g: 'Recent', n: m.name, c: m.calories });
+    }
+    return out;
+  }
+
   function renderDropdown(q) {
     const lq = q.toLowerCase();
     const filtered = lq ? FOODS.filter(f => f.n.toLowerCase().includes(lq)) : FOODS;
-    if (!filtered.length) {
+    const recent = !lq ? recentFoods() : [];
+    if (!filtered.length && !recent.length) {
       dropdown.innerHTML = '<div class="fp-no-results">No matches — try a shorter term</div>';
       dropdown.hidden = false; return;
     }
     const groups = {};
     filtered.forEach(f => { (groups[f.g] = groups[f.g] || []).push(f); });
-    dropdown.innerHTML = Object.entries(groups).map(([g, foods]) =>
+    const recentHtml = recent.length
+      ? '<div class="fp-group-label">Recent</div>' +
+        recent.map(f =>
+          '<div class="fp-option" data-n="' + esc(f.n) + '" data-c="' + f.c + '">' +
+          '<span class="fp-option-name">' + esc(f.n) + '</span>' +
+          '<span class="fp-option-cal">' + f.c + ' cal</span></div>'
+        ).join('')
+      : '';
+    dropdown.innerHTML = recentHtml + Object.entries(groups).map(([g, foods]) =>
       '<div class="fp-group-label">' + esc(g) + '</div>' +
       foods.map(f =>
         '<div class="fp-option" data-n="' + esc(f.n) + '" data-c="' + f.c + '">' +
@@ -1291,6 +1561,80 @@ const FOODS = [
   });
 })();
 
+(function() {
+  const searchEl  = document.getElementById('eActSearch');
+  const dropdown  = document.getElementById('eActDropdown');
+  const clearBtn  = document.getElementById('eActClear');
+  const hiddenEl  = document.getElementById('eAct');
+  const calEl     = document.getElementById('eCals');
+  const durEl     = document.getElementById('eDuration');
+  const wrap      = document.getElementById('eActWrap');
+  if (!searchEl) return;
+
+  function renderDropdown(q) {
+    const lq = q.toLowerCase();
+    const filtered = lq ? EXERCISES.filter(f => f.n.toLowerCase().includes(lq)) : EXERCISES;
+    if (!filtered.length) {
+      dropdown.innerHTML = '<div class="fp-no-results">No matches — try a shorter term</div>';
+      dropdown.hidden = false; return;
+    }
+    const groups = {};
+    filtered.forEach(f => { (groups[f.g] = groups[f.g] || []).push(f); });
+    dropdown.innerHTML = Object.entries(groups).map(([g, exs]) =>
+      '<div class="fp-group-label">' + esc(g) + '</div>' +
+      exs.map(f =>
+        '<div class="fp-option" data-n="' + esc(f.n) + '" data-c="' + f.c + '">' +
+        '<span class="fp-option-name">' + esc(f.n) + '</span>' +
+        '<span class="fp-option-cal">' + f.c + ' cal/30min</span></div>'
+      ).join('')
+    ).join('');
+    dropdown.hidden = false;
+  }
+
+  function recalc() {
+    const per30 = parseInt(hiddenEl.value.split('|')[0]);
+    if (isNaN(per30)) return;
+    const mins = parseInt(durEl.value) || 30;
+    calEl.value = Math.round(per30 * (mins / 30));
+  }
+
+  searchEl.addEventListener('focus', () => renderDropdown(searchEl.value));
+  searchEl.addEventListener('input', () => {
+    hiddenEl.value = '';
+    clearBtn.hidden = !searchEl.value;
+    renderDropdown(searchEl.value);
+  });
+
+  dropdown.addEventListener('mousedown', e => {
+    const opt = e.target.closest('.fp-option');
+    if (!opt) return;
+    e.preventDefault();
+    const name = opt.dataset.n;
+    const cal  = parseInt(opt.dataset.c);
+    hiddenEl.value  = cal + '|' + name;
+    searchEl.value  = name;
+    clearBtn.hidden = false;
+    dropdown.hidden = true;
+    if (!durEl.value) durEl.value = 30;
+    recalc();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    hiddenEl.value  = '';
+    searchEl.value  = '';
+    calEl.value     = '';
+    clearBtn.hidden = true;
+    dropdown.hidden = true;
+    searchEl.focus();
+  });
+
+  durEl.addEventListener('input', recalc);
+
+  document.addEventListener('click', e => {
+    if (!wrap.contains(e.target)) dropdown.hidden = true;
+  });
+})();
+
 document.getElementById('logMealBtn')?.addEventListener('click', () => {
   const date  = document.getElementById('mDate').value;
   const parts = (document.getElementById('mName').value || '').split('|');
@@ -1305,6 +1649,23 @@ document.getElementById('logMealBtn')?.addEventListener('click', () => {
   document.getElementById('mCals').value     = '';
   render();
   toast('Meal added');
+});
+
+document.getElementById('logExerciseBtn')?.addEventListener('click', () => {
+  const date  = document.getElementById('eDate').value;
+  const parts = (document.getElementById('eAct').value || '').split('|');
+  const name  = parts[1] || '';
+  const cals  = parseInt(document.getElementById('eCals').value);
+  if (!date || isNaN(cals) || cals < 0) { toast('Enter a valid date and calories'); return; }
+  data.exercise.push({ id: uid(), date, name, calories: cals });
+  saveData();
+  document.getElementById('eAct').value       = '';
+  document.getElementById('eActSearch').value = '';
+  document.getElementById('eActClear').hidden = true;
+  document.getElementById('eDuration').value  = '';
+  document.getElementById('eCals').value      = '';
+  render();
+  toast('Exercise logged');
 });
 
 document.getElementById('todayMeals').addEventListener('click', e => {
@@ -1332,16 +1693,19 @@ document.getElementById('settingsBtn')?.addEventListener('click', () => {
   const p = document.getElementById('settingsPanel');
   p.classList.toggle('open');
   if (p.classList.contains('open')) {
-    document.getElementById('goalInput').value     = data.goal || 1500;
-    document.getElementById('protocolInput').value = data.protocol || '';
+    document.getElementById('goalInput').value       = data.goal || 1500;
+    document.getElementById('protocolInput').value   = data.protocol || '';
+    document.getElementById('weeklyGoalInput').value = data.weeklyLossGoal || 1.5;
   }
 });
 
 document.getElementById('saveSettings')?.addEventListener('click', () => {
-  const g = parseInt(document.getElementById('goalInput').value);
-  const p = document.getElementById('protocolInput').value.trim();
+  const g  = parseInt(document.getElementById('goalInput').value);
+  const p  = document.getElementById('protocolInput').value.trim();
+  const wg = parseFloat(document.getElementById('weeklyGoalInput').value);
   if (!isNaN(g) && g >= 500 && g <= 5000) data.goal = g;
   if (p) data.protocol = p;
+  if (!isNaN(wg) && wg >= 0.5 && wg <= 5) data.weeklyLossGoal = wg;
   saveData();
   document.getElementById('settingsPanel').classList.remove('open');
   render();
