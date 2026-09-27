@@ -647,7 +647,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
   <div class="stat-tile">
     <div class="stat-label">Calories Today</div>
     <div class="stat-value" id="statCals">0</div>
-    <div class="stat-unit" id="statCalsUnit">/ 1500 goal</div>
+    <div class="stat-unit" id="statCalsUnit">/ 1800 goal</div>
   </div>
   <div class="stat-tile">
     <div class="stat-label">Days on Protocol</div>
@@ -772,8 +772,8 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
             <span class="cal-ring-unit">cal</span>
           </div>
         </div>
-        <div class="cal-goal-text" id="calGoalText">Goal: 1500</div>
-        <div class="cal-remain" id="calRemain">1500 remaining</div>
+        <div class="cal-goal-text" id="calGoalText">Goal: 1800</div>
+        <div class="cal-remain" id="calRemain">1800 remaining</div>
       </div>
 
       <div class="card-title">Today's Food</div>
@@ -855,7 +855,7 @@ const DEFAULT_DATA   = {
   weights:  [{ date: '2026-09-22', weight: 245.7 }],
   meals:    [],
   exercise: [],
-  goal:     1500,
+  goal:     1800,
   protocol: "Jeff's 225 Program",
   weeklyLossGoal: 1.5
 };
@@ -1092,7 +1092,7 @@ function renderWeightChart(sorted) {
 function renderCalChart() {
   const c    = clr();
   const ctx  = document.getElementById('calChart').getContext('2d');
-  const goal = data.goal || 1500;
+  const goal = data.goal || 1800;
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(todayStr() + 'T12:00:00Z');
@@ -1151,7 +1151,7 @@ function renderCalChart() {
 // ── Render ────────────────────────────────────────────────
 function render() {
   const td   = todayStr();
-  const goal = data.goal || 1500;
+  const goal = data.goal || 1800;
 
   document.getElementById('dayBadge').textContent    = 'Day ' + dayNum(td);
   document.getElementById('protocolLabel').textContent = data.protocol || 'Protocol';
@@ -1693,7 +1693,7 @@ document.getElementById('settingsBtn')?.addEventListener('click', () => {
   const p = document.getElementById('settingsPanel');
   p.classList.toggle('open');
   if (p.classList.contains('open')) {
-    document.getElementById('goalInput').value       = data.goal || 1500;
+    document.getElementById('goalInput').value       = data.goal || 1800;
     document.getElementById('protocolInput').value   = data.protocol || '';
     document.getElementById('weeklyGoalInput').value = data.weeklyLossGoal || 1.5;
   }

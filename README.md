@@ -93,7 +93,7 @@ git push
 
 | Setting | Default | Notes |
 |---|---|---|
-| Daily calorie goal | 1500 cal | Adjust based on protocol phase |
+| Daily calorie goal | 1800 cal | Adjust based on protocol phase |
 | Protocol name | Jeff's 225 Program | Display-only label in the header |
 
 ### If Wade switches computers or browsers
