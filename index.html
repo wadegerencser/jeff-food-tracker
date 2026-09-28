@@ -540,6 +540,39 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Nutrient compass ─────────────────────────────────── */
+.compass-wrap { margin: 16px 0 18px; text-align: center; }
+.compass-svg { width: 100%; max-width: 220px; height: auto; }
+.compass-arc { fill: none; stroke-width: 12; stroke-linecap: butt; }
+.compass-arc.bad { stroke: var(--danger); opacity: .55; }
+.compass-arc.mid { stroke: var(--text-2); opacity: .4; }
+.compass-arc.good { stroke: var(--accent); opacity: .55; }
+.compass-needle { stroke: var(--text); stroke-width: 3; stroke-linecap: round; transition: all .5s cubic-bezier(.34,1.4,.4,1); }
+.compass-pivot { fill: var(--text); }
+.compass-labels { display: flex; justify-content: space-between; font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); margin-top: -8px; padding: 0 4px; }
+.compass-labels span:first-child { color: var(--danger); }
+.compass-labels span:last-child { color: var(--accent); }
+.compass-detail { font-size: .82rem; color: var(--text-2); margin-top: 6px; min-height: 34px; }
+.compass-detail strong { color: var(--text); }
+.compass-breakdown { display: flex; justify-content: space-between; gap: 6px; margin-top: 10px; font-size: .68rem; }
+.compass-nut { flex: 1; text-align: center; }
+.compass-nut-label { color: var(--text-2); letter-spacing: .06em; text-transform: uppercase; font-size: .6rem; margin-bottom: 2px; }
+.compass-nut-val { font-family: 'Oswald', sans-serif; font-weight: 600; font-variant-numeric: tabular-nums; }
+.compass-nut-val.good { color: var(--accent); }
+.compass-nut-val.bad { color: var(--danger); }
+.water-row { display: flex; gap: 6px; align-items: center; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+.water-pill {
+  font-family: 'Oswald', sans-serif; font-size: .72rem; font-weight: 600;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text-2);
+  border-radius: 20px; padding: 4px 12px; cursor: pointer; transition: color .15s, border-color .15s;
+}
+.water-pill:hover { color: var(--text); border-color: var(--text-2); }
+.sleep-row { margin-top: 10px; text-align: center; }
+.sleep-row label { display: block; margin-bottom: 6px; }
+.sleep-input-line { display: flex; gap: 8px; justify-content: center; align-items: center; max-width: 200px; margin: 0 auto; }
+.sleep-input-line input { text-align: center; }
+.compass-note { font-size: .72rem; color: var(--text-2); font-style: italic; text-align: center; margin-top: 10px; }
+
 /* ── Weekly zone banner ───────────────────────────────── */
 .zone-banner {
   display: flex;
@@ -627,6 +660,26 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
   <div class="sf">
     <label for="weeklyGoalInput">Weekly Loss Goal (lbs)</label>
     <input type="number" id="weeklyGoalInput" style="width:110px" min="0.5" max="5" step="0.1">
+  </div>
+  <div class="sf">
+    <label for="proteinGoalInput">Protein Goal (g)</label>
+    <input type="number" id="proteinGoalInput" style="width:100px" min="30" max="400" step="5">
+  </div>
+  <div class="sf">
+    <label for="carbGoalInput">Carb Ceiling (g)</label>
+    <input type="number" id="carbGoalInput" style="width:100px" min="30" max="500" step="5">
+  </div>
+  <div class="sf">
+    <label for="fatGoalInput">Fat Ceiling (g)</label>
+    <input type="number" id="fatGoalInput" style="width:100px" min="10" max="200" step="5">
+  </div>
+  <div class="sf">
+    <label for="waterGoalInput">Water Goal (oz)</label>
+    <input type="number" id="waterGoalInput" style="width:100px" min="20" max="250" step="5">
+  </div>
+  <div class="sf">
+    <label for="sleepGoalInput">Sleep Goal (hrs)</label>
+    <input type="number" id="sleepGoalInput" style="width:100px" min="4" max="12" step="0.5">
   </div>
   <div class="sf" style="justify-content:flex-end">
     <button class="btn btn-green" style="width:auto;padding:8px 22px" id="saveSettings">Save</button>
@@ -776,6 +829,28 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
         <div class="cal-remain" id="calRemain">1800 remaining</div>
       </div>
 
+      <div class="compass-wrap">
+        <svg class="compass-svg" viewBox="0 0 200 118">
+          <path class="compass-arc bad"  d="M 20 100 A 80 80 0 0 1 61.7 30.7"></path>
+          <path class="compass-arc mid"  d="M 61.7 30.7 A 80 80 0 0 1 138.3 30.7"></path>
+          <path class="compass-arc good" d="M 138.3 30.7 A 80 80 0 0 1 180 100"></path>
+          <line class="compass-needle" id="compassNeedle" x1="100" y1="100" x2="100" y2="30"></line>
+          <circle class="compass-pivot" cx="100" cy="100" r="5"></circle>
+        </svg>
+        <div class="compass-labels"><span>Unhealthy</span><span>Balanced</span><span>Healthy</span></div>
+        <div class="compass-detail" id="compassDetail">Log a meal to see today's balance</div>
+        <div class="compass-breakdown" id="compassBreakdown"></div>
+        <div class="water-row" id="waterRow"></div>
+        <div class="sleep-row" id="sleepRow">
+          <label for="sleepInput">Hours slept last night</label>
+          <div class="sleep-input-line">
+            <input type="number" id="sleepInput" min="0" max="14" step="0.25" placeholder="7.5">
+            <button class="btn btn-green" id="logSleepBtn" style="width:auto;margin-top:0;padding:8px 16px">Log</button>
+          </div>
+        </div>
+        <div class="compass-note" id="compassNote"></div>
+      </div>
+
       <div class="card-title">Today's Food</div>
       <ul class="meals-list" id="todayMeals">
         <li class="empty-note">Nothing logged yet</li>
@@ -855,9 +930,16 @@ const DEFAULT_DATA   = {
   weights:  [{ date: '2026-09-22', weight: 245.7 }],
   meals:    [],
   exercise: [],
+  water:    [],
   goal:     1800,
   protocol: "Jeff's 225 Program",
-  weeklyLossGoal: 1.5
+  weeklyLossGoal: 1.5,
+  sleep:    [],
+  proteinGoal: 130,
+  carbGoal:    150,
+  fatGoal:     55,
+  waterGoal:   100,
+  sleepGoal:   7.5
 };
 
 let readOnly    = false;
@@ -912,7 +994,14 @@ function handleShareLink() {
     if (d && Array.isArray(d.weights)) {
       readOnly = true; data = d;
       if (!Array.isArray(data.exercise)) data.exercise = [];
+      if (!Array.isArray(data.water)) data.water = [];
+      if (!Array.isArray(data.sleep)) data.sleep = [];
       if (!data.weeklyLossGoal) data.weeklyLossGoal = DEFAULT_DATA.weeklyLossGoal;
+      if (!data.proteinGoal) data.proteinGoal = DEFAULT_DATA.proteinGoal;
+      if (!data.carbGoal)    data.carbGoal    = DEFAULT_DATA.carbGoal;
+      if (!data.fatGoal)     data.fatGoal     = DEFAULT_DATA.fatGoal;
+      if (!data.waterGoal)   data.waterGoal   = DEFAULT_DATA.waterGoal;
+      if (!data.sleepGoal)   data.sleepGoal   = DEFAULT_DATA.sleepGoal;
       document.getElementById('roBanner').classList.add('show');
       document.getElementById('logSection').style.display  = 'none';
       document.getElementById('headerActions').style.display = 'none';
@@ -930,7 +1019,14 @@ function listenFirestore() {
       if (!Array.isArray(data.meals))   data.meals   = [];
       if (!Array.isArray(data.weights)) data.weights = [];
       if (!Array.isArray(data.exercise)) data.exercise = [];
+      if (!Array.isArray(data.water)) data.water = [];
+      if (!Array.isArray(data.sleep)) data.sleep = [];
       if (!data.weeklyLossGoal) data.weeklyLossGoal = DEFAULT_DATA.weeklyLossGoal;
+      if (!data.proteinGoal) data.proteinGoal = DEFAULT_DATA.proteinGoal;
+      if (!data.carbGoal)    data.carbGoal    = DEFAULT_DATA.carbGoal;
+      if (!data.fatGoal)     data.fatGoal     = DEFAULT_DATA.fatGoal;
+      if (!data.waterGoal)   data.waterGoal   = DEFAULT_DATA.waterGoal;
+      if (!data.sleepGoal)   data.sleepGoal   = DEFAULT_DATA.sleepGoal;
     } else {
       // First sign-in — migrate localStorage or use defaults
       const local = localStorage.getItem(STORAGE_KEY);
@@ -1245,6 +1341,119 @@ function render() {
   renderCalChart();
   renderGoalProgress(sorted, latest);
   renderZoneBanner(td, goal);
+  renderCompass(td, todayMeals);
+}
+
+// ── Nutrient compass ─────────────────────────────────────────
+// Score each factor from -1 (unhealthy direction) to +1 (healthy direction)
+// against Jeff's daily targets, average them, and point the needle. This is
+// deliberately separate from the calorie budget and from exercise — it
+// answers "is today's INPUT healthy," not "did I burn it off," so a hard
+// workout can never move this needle. Only what he ate/drank/slept can.
+function nutrientScore(actual, goal, direction) {
+  const ratio = goal > 0 ? actual / goal : 0;
+  if (direction === 'min') {
+    // protein / water / sleep: below goal is bad, at/above goal is good
+    if (ratio >= 1) return Math.min(1, 0.5 + (ratio - 1) * 0.5);
+    return Math.max(-1, (ratio - 1) * 1.5);
+  }
+  // carbs / fat: below goal is fine-to-good, meaningfully over goal is bad
+  if (ratio <= 1) return Math.min(1, (1 - ratio) * 1.2);
+  return Math.max(-1, -(ratio - 1) * 1.2);
+}
+
+function renderCompass(td, todayMeals) {
+  const needle = document.getElementById('compassNeedle');
+  const detail = document.getElementById('compassDetail');
+  const breakdown = document.getElementById('compassBreakdown');
+  const waterRow = document.getElementById('waterRow');
+  const sleepInput = document.getElementById('sleepInput');
+  if (!needle) return;
+
+  const protein = todayMeals.reduce((s,m) => s + (m.protein || 0), 0);
+  const carbs   = todayMeals.reduce((s,m) => s + (m.carbs   || 0), 0);
+  const fat     = todayMeals.reduce((s,m) => s + (m.fat     || 0), 0);
+  const water   = (data.water || []).filter(w => w.date === td).reduce((s,w) => s + w.oz, 0);
+  // Sleep logged for "last night" is recorded against today's date.
+  const sleepEntry = (data.sleep || []).find(s => s.date === td);
+  const sleep = sleepEntry ? sleepEntry.hours : null;
+  if (sleepInput) sleepInput.value = sleepEntry ? sleepEntry.hours : '';
+
+  const pGoal = data.proteinGoal || 130;
+  const cGoal = data.carbGoal    || 150;
+  const fGoal = data.fatGoal     || 55;
+  const wGoal = data.waterGoal   || 100;
+  const sGoal = data.sleepGoal   || 7.5;
+
+  const nutrients = [
+    { key:'protein', label:'Protein', val:protein, unit:'g',  goal:pGoal, dir:'min' },
+    { key:'carbs',   label:'Carbs',   val:carbs,   unit:'g',  goal:cGoal, dir:'max' },
+    { key:'fat',     label:'Fat',     val:fat,     unit:'g',  goal:fGoal, dir:'max' },
+    { key:'water',   label:'Water',   val:water,   unit:'oz', goal:wGoal, dir:'min' },
+  ];
+  if (sleep != null) {
+    nutrients.push({ key:'sleep', label:'Sleep', val:sleep, unit:'h', goal:sGoal, dir:'min' });
+  }
+
+  const hasAnyLog = todayMeals.length > 0 || water > 0 || sleep != null;
+
+  nutrients.forEach(n => n.score = nutrientScore(n.val, n.goal, n.dir));
+  const avgScore = hasAnyLog
+    ? nutrients.reduce((s,n) => s + n.score, 0) / nutrients.length
+    : 0;
+
+  // Needle sweeps -90deg (unhealthy, left) to +90deg (healthy, right) around pivot (100,100)
+  const angleDeg = avgScore * 85; // leave a hair of margin off the hard edges
+  const rad = (angleDeg - 90) * Math.PI / 180;
+  const len = 70;
+  needle.setAttribute('x2', (100 + len * Math.cos(rad)).toFixed(1));
+  needle.setAttribute('y2', (100 + len * Math.sin(rad)).toFixed(1));
+
+  if (!hasAnyLog) {
+    detail.innerHTML = 'Log a meal to see today’s balance';
+  } else {
+    // Name every factor pulling the needle the "wrong" way, not just the single worst one —
+    // a needle that only ever blames one thing reads as arbitrary; naming all of them reads as true.
+    const dragging = nutrients.filter(n => n.score <= -0.15);
+    const helping   = nutrients.filter(n => n.score >= 0.15);
+    if (avgScore >= 0.15 && dragging.length === 0) {
+      const names = helping.map(n => n.label.toLowerCase()).join(', ');
+      detail.innerHTML = 'Leaning <strong>healthy</strong> — ' + (names || 'on track') + ' holding steady';
+    } else if (avgScore <= -0.15 || dragging.length > 0) {
+      const names = dragging.map(n => n.label.toLowerCase() + ' ' + (n.dir === 'min' ? 'low' : 'high')).join(', ');
+      const verdict = avgScore <= -0.4 ? 'well into unhealthy' : 'leaning unhealthy';
+      detail.innerHTML = 'Today is <strong>' + verdict + '</strong> — ' + names;
+    } else {
+      detail.innerHTML = 'Right around <strong>balanced</strong> today';
+    }
+  }
+
+  breakdown.innerHTML = nutrients.map(n => {
+    const cls = n.score >= 0.15 ? 'good' : n.score <= -0.15 ? 'bad' : '';
+    const valStr = n.unit === 'h' ? n.val.toFixed(1) : Math.round(n.val);
+    return '<div class="compass-nut">'
+      + '<div class="compass-nut-label">' + n.label + '</div>'
+      + '<div class="compass-nut-val ' + cls + '">' + valStr + '/' + n.goal + n.unit + '</div>'
+      + '</div>';
+  }).join('');
+
+  if (!readOnly) {
+    waterRow.innerHTML = [8, 16, 24].map(oz =>
+      '<button class="water-pill" data-oz="' + oz + '">+' + oz + 'oz water</button>'
+    ).join('');
+  } else {
+    waterRow.innerHTML = '';
+  }
+
+  const sleepRow = document.getElementById('sleepRow');
+  if (sleepRow) sleepRow.style.display = readOnly ? 'none' : '';
+
+  const noteEl = document.getElementById('compassNote');
+  if (noteEl) {
+    noteEl.textContent = hasAnyLog && sleep == null
+      ? 'Log sleep to sharpen this. Note: exercise never moves this needle — only food, water, and sleep do.'
+      : 'Exercise never moves this needle — only food, water, and sleep do.';
+  }
 }
 
 // ── Weekly red/green zone ────────────────────────────────────
@@ -1383,75 +1592,76 @@ function renderGoalProgress(sorted, latest) {
 }
 
 // ── Food picker ───────────────────────────────────────────
+// p = protein g, cb = carb g, f = fat g — USDA-based per-serving estimates
 const FOODS = [
-  {g:'Vegetables', n:'Cucumber (1 cup sliced)', c:16},
-  {g:'Vegetables', n:'Cherry tomatoes (1 cup)', c:27},
-  {g:'Vegetables', n:'Avocado (½ medium)', c:120},
-  {g:'Vegetables', n:'Baby carrots (1 cup)', c:52},
-  {g:'Vegetables', n:'Broccoli, cooked (1 cup)', c:55},
-  {g:'Vegetables', n:'Celery (1 cup)', c:16},
-  {g:'Vegetables', n:'Spinach, raw (2 cups)', c:14},
-  {g:'Vegetables', n:'Bell pepper (1 medium)', c:31},
-  {g:'Vegetables', n:'Zucchini (1 cup sliced)', c:21},
-  {g:'Vegetables', n:'Asparagus (1 cup)', c:27},
-  {g:'Vegetables', n:'Green beans (1 cup)', c:44},
-  {g:'Vegetables', n:'Kale, raw (1 cup)', c:33},
-  {g:'Vegetables', n:'Cauliflower (1 cup)', c:25},
-  {g:'Vegetables', n:'Sweet potato (1 medium)', c:103},
-  {g:'Vegetables', n:'Mushrooms, sliced (1 cup)', c:18},
-  {g:'Vegetables', n:'Onion (½ cup chopped)', c:20},
-  {g:'Vegetables', n:'Romaine lettuce (2 cups)', c:17},
-  {g:'Vegetables', n:'Edamame (½ cup shelled)', c:95},
-  {g:'Vegetables', n:'Radishes (1 cup)', c:19},
-  {g:'Vegetables', n:'Beets (½ cup cooked)', c:38},
-  {g:'Fruits', n:'Black raspberries (1 cup)', c:65},
-  {g:'Fruits', n:'Blueberries (1 cup)', c:84},
-  {g:'Fruits', n:'Strawberries (1 cup)', c:49},
-  {g:'Fruits', n:'Apple (1 medium)', c:95},
-  {g:'Fruits', n:'Banana (1 medium)', c:105},
-  {g:'Fruits', n:'Orange (1 medium)', c:62},
-  {g:'Fruits', n:'Grapes (1 cup)', c:104},
-  {g:'Fruits', n:'Watermelon (1 cup diced)', c:46},
-  {g:'Fruits', n:'Peach (1 medium)', c:59},
-  {g:'Fruits', n:'Pineapple (1 cup)', c:82},
-  {g:'Fruits', n:'Grapefruit (½ medium)', c:37},
-  {g:'Fruits', n:'Cherries (1 cup)', c:67},
-  {g:'Fruits', n:'Mango (½ cup)', c:60},
-  {g:'Fruits', n:'Kiwi (1 medium)', c:42},
-  {g:'Fruits', n:'Pear (1 medium)', c:86},
-  {g:'Fruits', n:'Cantaloupe (1 cup)', c:54},
-  {g:'Fruits', n:'Raspberries (½ cup)', c:32},
-  {g:'Proteins & Meats', n:'Chicken breast, cooked (4 oz)', c:187},
-  {g:'Proteins & Meats', n:'Egg, whole (1 large)', c:70},
-  {g:'Proteins & Meats', n:'Salmon fillet, cooked (4 oz)', c:234},
-  {g:'Proteins & Meats', n:'Ground beef, 90% lean (4 oz)', c:199},
-  {g:'Proteins & Meats', n:'Turkey breast, cooked (4 oz)', c:153},
-  {g:'Proteins & Meats', n:'Tuna, canned in water (3 oz)', c:73},
-  {g:'Proteins & Meats', n:'Pork tenderloin, cooked (4 oz)', c:136},
-  {g:'Proteins & Meats', n:'Turkey sausage link (1 link)', c:85},
-  {g:'Proteins & Meats', n:'Shrimp, cooked (4 oz)', c:112},
-  {g:'Proteins & Meats', n:'Tilapia, cooked (4 oz)', c:111},
-  {g:'Proteins & Meats', n:'Cod, cooked (4 oz)', c:93},
-  {g:'Proteins & Meats', n:'Sirloin steak, lean (4 oz)', c:149},
-  {g:'Proteins & Meats', n:'Canned chickpeas (½ cup)', c:110},
-  {g:'Proteins & Meats', n:'Chicken thigh, cooked (4 oz)', c:170},
-  {g:'Dairy & Nuts', n:'Greek yogurt, plain 2% (¾ cup)', c:130},
-  {g:'Dairy & Nuts', n:'String cheese (1 stick)', c:80},
-  {g:'Dairy & Nuts', n:'Almonds (1 oz)', c:164},
-  {g:'Dairy & Nuts', n:'Walnuts (1 oz)', c:185},
-  {g:'Dairy & Nuts', n:'Olive oil (1 tbsp)', c:119},
-  {g:'Dairy & Nuts', n:'Cottage cheese, low-fat (½ cup)', c:102},
-  {g:'Dairy & Nuts', n:'Cheddar cheese (1 oz)', c:100},
-  {g:'Dairy & Nuts', n:'Peanut butter (2 tbsp)', c:190},
-  {g:'Dairy & Nuts', n:'Cashews (1 oz)', c:160},
-  {g:'Dairy & Nuts', n:'Sunflower seeds (1 oz)', c:165},
-  {g:'Grains & Legumes', n:'Brown rice, cooked (½ cup)', c:108},
-  {g:'Grains & Legumes', n:'Quinoa, cooked (½ cup)', c:111},
-  {g:'Grains & Legumes', n:'Steel-cut oats, dry (½ cup)', c:150},
-  {g:'Grains & Legumes', n:'Black beans, cooked (½ cup)', c:114},
-  {g:'Grains & Legumes', n:'Lentils, cooked (½ cup)', c:115},
-  {g:'Grains & Legumes', n:'Corn tortilla (2 small)', c:77},
-  {g:'Grains & Legumes', n:'Whole grain bread (1 slice)', c:69},
+  {g:'Vegetables', n:'Cucumber (1 cup sliced)', c:16, p:0.7, cb:3.8, f:0.1},
+  {g:'Vegetables', n:'Cherry tomatoes (1 cup)', c:27, p:1.3, cb:6, f:0.3},
+  {g:'Vegetables', n:'Avocado (½ medium)', c:120, p:1.5, cb:6, f:11},
+  {g:'Vegetables', n:'Baby carrots (1 cup)', c:52, p:1.2, cb:12, f:0.3},
+  {g:'Vegetables', n:'Broccoli, cooked (1 cup)', c:55, p:3.7, cb:11, f:0.6},
+  {g:'Vegetables', n:'Celery (1 cup)', c:16, p:0.7, cb:3, f:0.2},
+  {g:'Vegetables', n:'Spinach, raw (2 cups)', c:14, p:1.7, cb:2.2, f:0.2},
+  {g:'Vegetables', n:'Bell pepper (1 medium)', c:31, p:1, cb:7, f:0.3},
+  {g:'Vegetables', n:'Zucchini (1 cup sliced)', c:21, p:1.5, cb:4, f:0.2},
+  {g:'Vegetables', n:'Asparagus (1 cup)', c:27, p:3, cb:5, f:0.2},
+  {g:'Vegetables', n:'Green beans (1 cup)', c:44, p:2.4, cb:10, f:0.2},
+  {g:'Vegetables', n:'Kale, raw (1 cup)', c:33, p:2.2, cb:6.7, f:0.5},
+  {g:'Vegetables', n:'Cauliflower (1 cup)', c:25, p:2, cb:5, f:0.3},
+  {g:'Vegetables', n:'Sweet potato (1 medium)', c:103, p:2.3, cb:24, f:0.2},
+  {g:'Vegetables', n:'Mushrooms, sliced (1 cup)', c:18, p:2.5, cb:2.7, f:0.2},
+  {g:'Vegetables', n:'Onion (½ cup chopped)', c:20, p:0.5, cb:4.7, f:0.1},
+  {g:'Vegetables', n:'Romaine lettuce (2 cups)', c:17, p:1.2, cb:3.3, f:0.3},
+  {g:'Vegetables', n:'Edamame (½ cup shelled)', c:95, p:8.4, cb:7.4, f:4},
+  {g:'Vegetables', n:'Radishes (1 cup)', c:19, p:0.8, cb:4, f:0.1},
+  {g:'Vegetables', n:'Beets (½ cup cooked)', c:38, p:1.5, cb:8.5, f:0.2},
+  {g:'Fruits', n:'Black raspberries (1 cup)', c:65, p:1.5, cb:15, f:0.7},
+  {g:'Fruits', n:'Blueberries (1 cup)', c:84, p:1.1, cb:21, f:0.5},
+  {g:'Fruits', n:'Strawberries (1 cup)', c:49, p:1, cb:11.7, f:0.5},
+  {g:'Fruits', n:'Apple (1 medium)', c:95, p:0.5, cb:25, f:0.3},
+  {g:'Fruits', n:'Banana (1 medium)', c:105, p:1.3, cb:27, f:0.4},
+  {g:'Fruits', n:'Orange (1 medium)', c:62, p:1.2, cb:15.4, f:0.2},
+  {g:'Fruits', n:'Grapes (1 cup)', c:104, p:1.1, cb:27, f:0.2},
+  {g:'Fruits', n:'Watermelon (1 cup diced)', c:46, p:0.9, cb:11.5, f:0.2},
+  {g:'Fruits', n:'Peach (1 medium)', c:59, p:1.4, cb:14, f:0.4},
+  {g:'Fruits', n:'Pineapple (1 cup)', c:82, p:0.9, cb:21.6, f:0.2},
+  {g:'Fruits', n:'Grapefruit (½ medium)', c:37, p:0.7, cb:9.3, f:0.1},
+  {g:'Fruits', n:'Cherries (1 cup)', c:67, p:1.1, cb:17, f:0.3},
+  {g:'Fruits', n:'Mango (½ cup)', c:60, p:0.7, cb:15, f:0.3},
+  {g:'Fruits', n:'Kiwi (1 medium)', c:42, p:0.8, cb:10, f:0.4},
+  {g:'Fruits', n:'Pear (1 medium)', c:86, p:0.6, cb:23, f:0.3},
+  {g:'Fruits', n:'Cantaloupe (1 cup)', c:54, p:1.3, cb:13, f:0.3},
+  {g:'Fruits', n:'Raspberries (½ cup)', c:32, p:0.7, cb:7.4, f:0.4},
+  {g:'Proteins & Meats', n:'Chicken breast, cooked (4 oz)', c:187, p:35, cb:0, f:4},
+  {g:'Proteins & Meats', n:'Egg, whole (1 large)', c:70, p:6, cb:0.4, f:5},
+  {g:'Proteins & Meats', n:'Salmon fillet, cooked (4 oz)', c:234, p:25, cb:0, f:14},
+  {g:'Proteins & Meats', n:'Ground beef, 90% lean (4 oz)', c:199, p:23, cb:0, f:11},
+  {g:'Proteins & Meats', n:'Turkey breast, cooked (4 oz)', c:153, p:34, cb:0, f:1},
+  {g:'Proteins & Meats', n:'Tuna, canned in water (3 oz)', c:73, p:16.5, cb:0, f:0.6},
+  {g:'Proteins & Meats', n:'Pork tenderloin, cooked (4 oz)', c:136, p:24, cb:0, f:4},
+  {g:'Proteins & Meats', n:'Turkey sausage link (1 link)', c:85, p:6, cb:1, f:6},
+  {g:'Proteins & Meats', n:'Shrimp, cooked (4 oz)', c:112, p:24, cb:0.5, f:1.2},
+  {g:'Proteins & Meats', n:'Tilapia, cooked (4 oz)', c:111, p:23, cb:0, f:2},
+  {g:'Proteins & Meats', n:'Cod, cooked (4 oz)', c:93, p:20, cb:0, f:0.8},
+  {g:'Proteins & Meats', n:'Sirloin steak, lean (4 oz)', c:149, p:23.5, cb:0, f:6},
+  {g:'Proteins & Meats', n:'Canned chickpeas (½ cup)', c:110, p:6, cb:18, f:1.5},
+  {g:'Proteins & Meats', n:'Chicken thigh, cooked (4 oz)', c:170, p:24, cb:0, f:8},
+  {g:'Dairy & Nuts', n:'Greek yogurt, plain 2% (¾ cup)', c:130, p:17, cb:6, f:3.5},
+  {g:'Dairy & Nuts', n:'String cheese (1 stick)', c:80, p:7, cb:1, f:6},
+  {g:'Dairy & Nuts', n:'Almonds (1 oz)', c:164, p:6, cb:6, f:14},
+  {g:'Dairy & Nuts', n:'Walnuts (1 oz)', c:185, p:4.3, cb:3.9, f:18.5},
+  {g:'Dairy & Nuts', n:'Olive oil (1 tbsp)', c:119, p:0, cb:0, f:14},
+  {g:'Dairy & Nuts', n:'Cottage cheese, low-fat (½ cup)', c:102, p:14, cb:4, f:2.2},
+  {g:'Dairy & Nuts', n:'Cheddar cheese (1 oz)', c:100, p:6, cb:1, f:9},
+  {g:'Dairy & Nuts', n:'Peanut butter (2 tbsp)', c:190, p:8, cb:6, f:16},
+  {g:'Dairy & Nuts', n:'Cashews (1 oz)', c:160, p:5, cb:9, f:12},
+  {g:'Dairy & Nuts', n:'Sunflower seeds (1 oz)', c:165, p:6, cb:6.5, f:14},
+  {g:'Grains & Legumes', n:'Brown rice, cooked (½ cup)', c:108, p:2.5, cb:22, f:0.9},
+  {g:'Grains & Legumes', n:'Quinoa, cooked (½ cup)', c:111, p:4, cb:20, f:1.8},
+  {g:'Grains & Legumes', n:'Steel-cut oats, dry (½ cup)', c:150, p:5, cb:27, f:2.5},
+  {g:'Grains & Legumes', n:'Black beans, cooked (½ cup)', c:114, p:7.6, cb:20, f:0.5},
+  {g:'Grains & Legumes', n:'Lentils, cooked (½ cup)', c:115, p:9, cb:20, f:0.4},
+  {g:'Grains & Legumes', n:'Corn tortilla (2 small)', c:77, p:2, cb:16, f:1},
+  {g:'Grains & Legumes', n:'Whole grain bread (1 slice)', c:69, p:3.5, cb:12, f:1},
 ];
 
 // Calories per 30 minutes, for a ~245lb person (matches Jeff's tracked weight) — rounded estimates
@@ -1641,7 +1851,15 @@ document.getElementById('logMealBtn')?.addEventListener('click', () => {
   const name  = parts[1] || '';
   const cals  = parseInt(document.getElementById('mCals').value);
   if (!date || !name || isNaN(cals) || cals < 0) { toast('Search and select a food first'); return; }
-  data.meals.push({ id: uid(), date, name, calories: cals });
+  const mealType = document.getElementById('mMealType').value;
+  const time     = document.getElementById('mTime').value;
+  const food     = FOODS.find(f => f.n === name);
+  data.meals.push({
+    id: uid(), date, name, calories: cals, mealType, time,
+    protein: food ? food.p  : 0,
+    carbs:   food ? food.cb : 0,
+    fat:     food ? food.f  : 0
+  });
   saveData();
   document.getElementById('mName').value     = '';
   document.getElementById('mFoodSearch').value = '';
@@ -1666,6 +1884,23 @@ document.getElementById('logExerciseBtn')?.addEventListener('click', () => {
   document.getElementById('eCals').value      = '';
   render();
   toast('Exercise logged');
+});
+
+document.getElementById('waterRow').addEventListener('click', e => {
+  const btn = e.target.closest('[data-oz]');
+  if (!btn || readOnly) return;
+  const oz = parseInt(btn.dataset.oz);
+  data.water.push({ id: uid(), date: todayStr(), oz });
+  saveData(); render(); toast('+' + oz + 'oz water logged');
+});
+
+document.getElementById('logSleepBtn')?.addEventListener('click', () => {
+  const hours = parseFloat(document.getElementById('sleepInput').value);
+  if (isNaN(hours) || hours < 0 || hours > 14) { toast('Enter hours between 0 and 14'); return; }
+  const td = todayStr();
+  data.sleep = data.sleep.filter(s => s.date !== td);
+  data.sleep.push({ id: uid(), date: td, hours });
+  saveData(); render(); toast('Sleep logged');
 });
 
 document.getElementById('todayMeals').addEventListener('click', e => {
@@ -1696,6 +1931,11 @@ document.getElementById('settingsBtn')?.addEventListener('click', () => {
     document.getElementById('goalInput').value       = data.goal || 1800;
     document.getElementById('protocolInput').value   = data.protocol || '';
     document.getElementById('weeklyGoalInput').value = data.weeklyLossGoal || 1.5;
+    document.getElementById('proteinGoalInput').value = data.proteinGoal || 130;
+    document.getElementById('carbGoalInput').value    = data.carbGoal    || 150;
+    document.getElementById('fatGoalInput').value     = data.fatGoal     || 55;
+    document.getElementById('waterGoalInput').value   = data.waterGoal   || 100;
+    document.getElementById('sleepGoalInput').value    = data.sleepGoal  || 7.5;
   }
 });
 
@@ -1703,9 +1943,19 @@ document.getElementById('saveSettings')?.addEventListener('click', () => {
   const g  = parseInt(document.getElementById('goalInput').value);
   const p  = document.getElementById('protocolInput').value.trim();
   const wg = parseFloat(document.getElementById('weeklyGoalInput').value);
+  const pg = parseInt(document.getElementById('proteinGoalInput').value);
+  const cg = parseInt(document.getElementById('carbGoalInput').value);
+  const fg = parseInt(document.getElementById('fatGoalInput').value);
+  const wtg = parseInt(document.getElementById('waterGoalInput').value);
+  const sg = parseFloat(document.getElementById('sleepGoalInput').value);
   if (!isNaN(g) && g >= 500 && g <= 5000) data.goal = g;
   if (p) data.protocol = p;
   if (!isNaN(wg) && wg >= 0.5 && wg <= 5) data.weeklyLossGoal = wg;
+  if (!isNaN(pg) && pg >= 30 && pg <= 400) data.proteinGoal = pg;
+  if (!isNaN(cg) && cg >= 30 && cg <= 500) data.carbGoal = cg;
+  if (!isNaN(fg) && fg >= 10 && fg <= 200) data.fatGoal = fg;
+  if (!isNaN(wtg) && wtg >= 20 && wtg <= 250) data.waterGoal = wtg;
+  if (!isNaN(sg) && sg >= 4 && sg <= 12) data.sleepGoal = sg;
   saveData();
   document.getElementById('settingsPanel').classList.remove('open');
   render();
