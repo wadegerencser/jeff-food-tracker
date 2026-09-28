@@ -19,10 +19,12 @@
   --text:      #E3E6F0;
   --text-2:    #8990B5;
   --accent:    #12D4A0;
-  --cal:       #F07820;
+  --cal:       #5BB8F0;
   --danger:    #E84040;
+  --stretch:   #C9A227;
   --accent-a:  rgba(18,212,160,.15);
-  --cal-a:     rgba(240,120,32,.15);
+  --cal-a:     rgba(91,184,240,.15);
+  --stretch-a: rgba(201,162,39,.15);
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
@@ -34,10 +36,12 @@
     --text:      #141822;
     --text-2:    #5A6285;
     --accent:    #0AB88C;
-    --cal:       #D96A18;
+    --cal:       #3C93D6;
     --danger:    #CC2828;
+    --stretch:   #9C7A0E;
     --accent-a:  rgba(10,184,140,.12);
-    --cal-a:     rgba(217,106,24,.12);
+    --cal-a:     rgba(60,147,214,.12);
+    --stretch-a: rgba(156,122,14,.12);
     color-scheme: light;
   }
 }
@@ -49,10 +53,12 @@
   --text:      #141822;
   --text-2:    #5A6285;
   --accent:    #0AB88C;
-  --cal:       #D96A18;
+  --cal:       #3C93D6;
   --danger:    #CC2828;
+  --stretch:   #9C7A0E;
   --accent-a:  rgba(10,184,140,.12);
-  --cal-a:     rgba(217,106,24,.12);
+  --cal-a:     rgba(60,147,214,.12);
+  --stretch-a: rgba(156,122,14,.12);
   color-scheme: light;
 }
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -402,7 +408,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 .btn:active { transform: scale(.98); }
 .btn:hover  { opacity: .88; }
 .btn-green  { background: var(--accent); color: #0B0D11; }
-.btn-orange { background: var(--cal);    color: #0B0D11; }
+.btn-cal    { background: var(--cal);    color: #0B0D11; }
 
 /* ── Weight history ───────────────────────────────────── */
 .hist-wrap { margin-top: 14px; }
@@ -497,6 +503,28 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 .goal-ms-name{font-size:.84rem;font-weight:600;margin-bottom:1px;}
 .goal-ms-note{font-size:.78rem;color:var(--text-2);}
 .goal-projection{font-size:.82rem;color:var(--text-2);font-style:italic;text-align:center;padding-top:4px;}
+
+/* ── Likelihood meter ─────────────────────────────────── */
+.likelihood-wrap{margin:20px 0 24px;}
+.likelihood-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+.likelihood-title{font-family:'Oswald',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);}
+.likelihood-tag{font-family:'Oswald',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:4px;border:1px solid var(--border);}
+.likelihood-tag.strong{color:var(--accent);border-color:var(--accent);background:var(--accent-a);}
+.likelihood-tag.solid{color:var(--cal);border-color:var(--cal);background:var(--cal-a);}
+.likelihood-tag.risk{color:var(--danger);border-color:var(--danger);background:rgba(232,64,64,.12);}
+.likelihood-track{position:relative;height:14px;background:var(--surface-2);border-radius:7px;overflow:hidden;}
+.likelihood-fill{height:100%;border-radius:7px;transition:width .6s ease, background .4s ease;}
+.likelihood-detail{font-size:.78rem;color:var(--text-2);margin-top:8px;}
+
+/* ── Stretch tier (215/210 — beyond the 225 goal) ─────── */
+.goal-stretch-divider{display:flex;align-items:center;gap:10px;margin:6px 0 10px;}
+.goal-stretch-divider::before,.goal-stretch-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.goal-stretch-label{font-family:'Oswald',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--stretch);white-space:nowrap;}
+.goal-ms-item.stretch{background:var(--stretch-a);}
+.goal-ms-item.stretch .goal-ms-num{color:var(--stretch);}
+.goal-ms-item.stretch .goal-ms-icon{color:var(--stretch);}
+.goal-ms-item.stretch.hit{background:var(--stretch-a);}
+.goal-ms-item.stretch.hit .goal-ms-num,.goal-ms-item.stretch.hit .goal-ms-icon{color:var(--stretch);}
 
 /* ── Meal checklist pills ─────────────────────────────── */
 .meal-checklist {
@@ -762,7 +790,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
               </div>
             </div>
             <div><label for="mCals">Calories <span style="font-size:.65rem;color:var(--text-2)">(auto-filled, adjustable)</span></label><input type="number" id="mCals" placeholder="auto-filled" min="0" max="9999"></div>
-            <button class="btn btn-orange" id="logMealBtn">Add Meal</button>
+            <button class="btn btn-cal" id="logMealBtn">Add Meal</button>
           </div>
         </div>
 
@@ -879,6 +907,17 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
     <div class="goal-ms-labels" id="goalMsLabels"></div>
   </div>
 
+  <div class="likelihood-wrap">
+    <div class="likelihood-top">
+      <span class="likelihood-title">Likelihood of Reaching 225</span>
+      <span class="likelihood-tag" id="likelihoodTag">—</span>
+    </div>
+    <div class="likelihood-track">
+      <div class="likelihood-fill" id="likelihoodFill" style="width:0%"></div>
+    </div>
+    <div class="likelihood-detail" id="likelihoodDetail"></div>
+  </div>
+
   <div class="goal-stats-row">
     <div class="goal-stat-cell">
       <div class="goal-stat-val" id="gStatStart">—</div>
@@ -903,6 +942,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
   </div>
 
   <div class="goal-ms-list" id="goalMsList"></div>
+  <div id="goalStretchList"></div>
   <div class="goal-projection" id="goalProjection"></div>
 </div>
 
@@ -1002,12 +1042,32 @@ function handleShareLink() {
       if (!data.fatGoal)     data.fatGoal     = DEFAULT_DATA.fatGoal;
       if (!data.waterGoal)   data.waterGoal   = DEFAULT_DATA.waterGoal;
       if (!data.sleepGoal)   data.sleepGoal   = DEFAULT_DATA.sleepGoal;
+      backfillMealMacros();
       document.getElementById('roBanner').classList.add('show');
       document.getElementById('logSection').style.display  = 'none';
       document.getElementById('headerActions').style.display = 'none';
       render();
     }
   } catch(e) {}
+}
+
+// One-time migration for meals logged before macro tracking existed —
+// matches each meal's saved name against FOODS to backfill protein/carbs/fat
+// so the nutrient compass reflects everything Jeff already logged, not just
+// meals added after this feature shipped. Returns true if anything changed.
+function backfillMealMacros() {
+  let changed = false;
+  data.meals.forEach(m => {
+    if (m.protein == null || m.carbs == null || m.fat == null) {
+      const food = FOODS.find(f => f.n === m.name);
+      m.protein = food ? food.p  : (m.protein || 0);
+      m.carbs   = food ? food.cb : (m.carbs   || 0);
+      m.fat     = food ? food.f  : (m.fat     || 0);
+      changed = true;
+    }
+    if (!m.mealType) { m.mealType = 'snack'; changed = true; }
+  });
+  return changed;
 }
 
 function listenFirestore() {
@@ -1027,11 +1087,13 @@ function listenFirestore() {
       if (!data.fatGoal)     data.fatGoal     = DEFAULT_DATA.fatGoal;
       if (!data.waterGoal)   data.waterGoal   = DEFAULT_DATA.waterGoal;
       if (!data.sleepGoal)   data.sleepGoal   = DEFAULT_DATA.sleepGoal;
+      if (backfillMealMacros()) saveData();
     } else {
       // First sign-in — migrate localStorage or use defaults
       const local = localStorage.getItem(STORAGE_KEY);
       data = local ? (() => { try { return JSON.parse(local); } catch(e) { return null; } })() : null;
       if (!data) data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      if (backfillMealMacros()) { /* falls through to the set() below */ }
       docRef().set(data);
     }
     const td = todayStr();
@@ -1117,18 +1179,43 @@ function cv(name) { return getComputedStyle(document.documentElement).getPropert
 function clr() {
   return {
     text: cv('--text'), text2: cv('--text-2'), grid: cv('--border'),
-    accent: cv('--accent'), cal: cv('--cal'), danger: cv('--danger'),
+    accent: cv('--accent'), cal: cv('--cal'), danger: cv('--danger'), stretch: cv('--stretch'),
     surface2: cv('--surface-2')
   };
 }
 
 let wChart = null, cChart = null;
 
+// Draws a dashed horizontal reference line + label at a given data value —
+// used to anchor both charts to a real target (calorie goal, weight goal,
+// stretch weight) instead of relying on bar/point color alone to say "good vs bad."
+function drawGoalLine(chart, value, color, label, dash) {
+  const { ctx, chartArea, scales } = chart;
+  const y = scales.y.getPixelForValue(value);
+  if (y < chartArea.top || y > chartArea.bottom) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash(dash || [6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(chartArea.left, y);
+  ctx.lineTo(chartArea.right, y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font = "600 10px 'Source Sans 3', sans-serif";
+  ctx.fillStyle = color;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(label, chartArea.right - 4, y - 3);
+  ctx.restore();
+}
+
 function renderWeightChart(sorted) {
   const c      = clr();
   const ctx    = document.getElementById('weightChart').getContext('2d');
   const labels = sorted.map(w => fmtDate(w.date));
   const vals   = sorted.map(w => w.weight);
+  const GOAL_W = 225, STRETCH_W = 215;
   const yMin   = vals.length ? Math.floor(Math.min(...vals) - 5) : 200;
   const yMax   = vals.length ? Math.ceil(Math.max(...vals)  + 5) : 300;
 
@@ -1181,7 +1268,14 @@ function renderWeightChart(sorted) {
           border: { display: false }
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'goalLines',
+      afterDraw(chart) {
+        drawGoalLine(chart, GOAL_W, c.cal, '225 Goal');
+        drawGoalLine(chart, STRETCH_W, c.stretch, '215 Stretch', [2, 3]);
+      }
+    }]
   });
 }
 
@@ -1240,7 +1334,11 @@ function renderCalChart() {
           border: { display: false }
         }
       }
-    }
+    },
+    plugins: [{
+      id: 'calGoalLine',
+      afterDraw(chart) { drawGoalLine(chart, goal, c.text2, goal + ' cal goal'); }
+    }]
   });
 }
 
@@ -1342,6 +1440,130 @@ function render() {
   renderGoalProgress(sorted, latest);
   renderZoneBanner(td, goal);
   renderCompass(td, todayMeals);
+  renderLikelihood(td, sorted, latest, goal);
+}
+
+// ── Likelihood of reaching 225 ───────────────────────────────
+// A composite score, same spirit as an EIGRP metric weighting several
+// factors together rather than one — no single bad day should swing it
+// wildly, and no single good day should either. Weighted inputs, all pulled
+// from real historicals already in `data`:
+//   40% pace factor    — actual lbs/day rate vs. the rate still required
+//                         to hit 225 by the 6-month deadline
+//   25% weekly discipline — trailing 4 weeks of calorie-vs-allowance balance
+//   20% nutrient trend — 7-day rolling average of the same score the
+//                         compass needle uses (so a rough Tuesday doesn't
+//                         tank it, but a rough week correctly does)
+//   15% consistency    — current logging streak, as a proxy for whether
+//                         Jeff is still engaged with the tool at all; a
+//                         program nobody's logging into is a program about
+//                         to be abandoned
+function dailyNutrientScore(dateStr) {
+  const meals = data.meals.filter(m => m.date === dateStr);
+  const water  = (data.water || []).filter(w => w.date === dateStr).reduce((s,w) => s + w.oz, 0);
+  const sleepEntry = (data.sleep || []).find(s => s.date === dateStr);
+  const hasLog = meals.length > 0 || water > 0 || sleepEntry;
+  if (!hasLog) return null;
+  const protein = meals.reduce((s,m) => s + (m.protein || 0), 0);
+  const carbs   = meals.reduce((s,m) => s + (m.carbs   || 0), 0);
+  const fat     = meals.reduce((s,m) => s + (m.fat     || 0), 0);
+  const scores = [
+    nutrientScore(protein, data.proteinGoal || 130, 'min'),
+    nutrientScore(carbs,   data.carbGoal    || 150, 'max'),
+    nutrientScore(fat,     data.fatGoal     || 55,  'max'),
+    nutrientScore(water,   data.waterGoal   || 100, 'min'),
+  ];
+  if (sleepEntry) scores.push(nutrientScore(sleepEntry.hours, data.sleepGoal || 7.5, 'min'));
+  return scores.reduce((s,v) => s + v, 0) / scores.length;
+}
+
+function renderLikelihood(td, sorted, latest, goal) {
+  const fillEl = document.getElementById('likelihoodFill');
+  const tagEl  = document.getElementById('likelihoodTag');
+  const detailEl = document.getElementById('likelihoodDetail');
+  if (!fillEl) return;
+
+  const GOAL_W = 225;
+  const startW = sorted.length ? sorted[0].weight : 245.7;
+  const currentW = latest ? latest.weight : startW;
+  const toGo = Math.max(0, currentW - GOAL_W);
+
+  const deadline = new Date(PROTOCOL_START + 'T12:00:00Z');
+  deadline.setUTCMonth(deadline.getUTCMonth() + 6);
+  const today = new Date(td + 'T12:00:00Z');
+  const daysLeft = Math.max(1, Math.round((deadline - today) / 86400000));
+  const requiredRate = toGo / daysLeft; // lbs/day still needed
+
+  // 1. Pace factor — actual rate achieved so far vs. rate still required.
+  let paceScore = 0.5; // neutral until there's enough history to trust a rate
+  if (sorted.length >= 2) {
+    const first = sorted[0], last = sorted[sorted.length - 1];
+    const elapsedDays = Math.max(1, (new Date(last.date + 'T12:00:00Z') - new Date(first.date + 'T12:00:00Z')) / 86400000);
+    const actualRate = (first.weight - last.weight) / elapsedDays;
+    if (toGo <= 0) paceScore = 1;
+    else if (requiredRate <= 0) paceScore = 1;
+    else paceScore = Math.max(0, Math.min(1.15, actualRate / requiredRate));
+  }
+
+  // 2. Weekly discipline — trailing 4 weeks of calorie-vs-allowance balance,
+  // same math as the zone banner, averaged so one bad week doesn't dominate.
+  let weeklyScore = 0.5;
+  const weekBalances = [];
+  for (let w = 0; w < 4; w++) {
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(td + 'T12:00:00Z');
+      d.setUTCDate(d.getUTCDate() - (w * 7) - (6 - i));
+      return d.toISOString().split('T')[0];
+    });
+    const consumed = data.meals.filter(m => days.includes(m.date)).reduce((s,m) => s + m.calories, 0);
+    const burned   = data.exercise.filter(e => days.includes(e.date)).reduce((s,e) => s + e.calories, 0);
+    const hadAnyLog = data.meals.some(m => days.includes(m.date));
+    if (!hadAnyLog && w > 0) continue; // don't penalize weeks before Jeff started logging
+    const allowance = goal * 7 + burned;
+    weekBalances.push(Math.max(0, Math.min(1, 0.5 + (allowance - consumed) / (goal * 7))));
+  }
+  if (weekBalances.length) weeklyScore = weekBalances.reduce((s,v) => s + v, 0) / weekBalances.length;
+
+  // 3. Nutrient trend — 7-day rolling average of the compass score, rescaled
+  // from [-1,1] to [0,1].
+  const trendDays = last7Days(td);
+  const trendScores = trendDays.map(dailyNutrientScore).filter(s => s != null);
+  const nutrientTrendScore = trendScores.length
+    ? (trendScores.reduce((s,v) => s + v, 0) / trendScores.length + 1) / 2
+    : 0.5;
+
+  // 4. Consistency — logging streak, capped at 14 days for full credit.
+  const streak = loggingStreak(td);
+  const consistencyScore = Math.max(0, Math.min(1, streak / 14));
+
+  const composite = paceScore * 0.40 + weeklyScore * 0.25 + nutrientTrendScore * 0.20 + consistencyScore * 0.15;
+  const pct = Math.round(Math.max(0, Math.min(1, composite)) * 100);
+
+  fillEl.style.width = pct + '%';
+  let tagCls, tagText, fillColor;
+  if (pct >= 70)      { tagCls = 'strong'; tagText = 'On Track';    fillColor = 'var(--accent)'; }
+  else if (pct >= 40) { tagCls = 'solid';  tagText = 'In The Mix';  fillColor = 'var(--cal)'; }
+  else                { tagCls = 'risk';   tagText = 'At Risk';     fillColor = 'var(--danger)'; }
+  tagEl.className = 'likelihood-tag ' + tagCls;
+  tagEl.textContent = pct + '% — ' + tagText;
+  fillEl.style.background = fillColor;
+
+  // Name the biggest drag and the biggest carry, same "show your work" rule as the compass.
+  const factors = [
+    { label: 'weight-loss pace', score: paceScore },
+    { label: 'weekly calorie discipline', score: weeklyScore },
+    { label: 'nutrient balance', score: nutrientTrendScore },
+    { label: 'logging consistency', score: consistencyScore },
+  ];
+  const weakest = [...factors].sort((a,b) => a.score - b.score)[0];
+  const strongest = [...factors].sort((a,b) => b.score - a.score)[0];
+  if (toGo <= 0) {
+    detailEl.textContent = '225 already reached — this is now tracking toward the stretch tier.';
+  } else if (streak === 0) {
+    detailEl.textContent = 'No recent logs — likelihood drops the longer the streak stays cold.';
+  } else {
+    detailEl.textContent = 'Carried by ' + strongest.label + '. Held back by ' + weakest.label + '. ' + daysLeft + ' days left on the 6-month window.';
+  }
 }
 
 // ── Nutrient compass ─────────────────────────────────────────
@@ -1558,7 +1780,7 @@ function renderGoalProgress(sorted, latest) {
     { w: 225, name: '225 — Goal Completed', note: '' },
   ].filter(m => m.w <= Math.ceil(startW));
 
-  document.getElementById('goalMsList').innerHTML = milestones.map(m => {
+  const mainRowsHtml = milestones.map(m => {
     const hit     = currentW <= m.w;
     const current = !hit && currentW <= m.w + 5;
     const cls     = hit ? 'hit' : current ? 'current' : '';
@@ -1569,6 +1791,31 @@ function renderGoalProgress(sorted, latest) {
       + '<div><div class="goal-ms-name">' + esc(m.name) + '</div>'
       + '<div class="goal-ms-note">' + esc(m.note) + '</div></div></div>';
   }).join('');
+
+  // Stretch tier — beyond the real 225 goal. Not part of the plan or the
+  // progress bar math; purely a bonus reach shown once 225 is realistically
+  // in play, so it never looks like the actual finish line moved.
+  const STRETCH = [
+    { w: 215, name: '215 — Blue Steel', note: 'Beyond the plan. Elite for 6’1″. Rare air.' },
+    { w: 210, name: '210 — Different Level', note: 'Life-changing territory. Almost nobody gets here.' },
+  ].filter(m => m.w < startW);
+
+  const stretchRowsHtml = STRETCH.length ? (
+    '<div class="goal-stretch-divider"><span class="goal-stretch-label">Bonus — Beyond The Goal</span></div>'
+    + '<div class="goal-ms-list" style="margin-bottom:16px">'
+    + STRETCH.map(m => {
+        const hit = currentW <= m.w;
+        return '<div class="goal-ms-item stretch' + (hit ? ' hit' : '') + '">'
+          + '<span class="goal-ms-num">' + m.w + ' lbs</span>'
+          + '<span class="goal-ms-icon">' + (hit ? '✓' : '★') + '</span>'
+          + '<div><div class="goal-ms-name">' + esc(m.name) + '</div>'
+          + '<div class="goal-ms-note">' + esc(m.note) + '</div></div></div>';
+      }).join('')
+    + '</div>'
+  ) : '';
+
+  document.getElementById('goalMsList').innerHTML = mainRowsHtml;
+  document.getElementById('goalStretchList').innerHTML = stretchRowsHtml;
 
   // projected finish
   const projEl = document.getElementById('goalProjection');
