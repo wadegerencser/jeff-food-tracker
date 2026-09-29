@@ -1,4 +1,4 @@
-# Jeff's Diet Program
+# The Prison Protocol
 
 > Jeff's personal calorie and weight tracker — built for one person and one goal. Not a general-purpose app.
 
@@ -42,6 +42,14 @@ zone            = green if weeklyBalance ≥ 0, else red
 ```
 
 This means a heavy-eating day isn't necessarily "red" if exercise offsets it, and a red day isn't a moral failure — it's exactly the information Jeff needs *before* deciding whether to be stricter tomorrow. `weeklyLossGoal` (default 1.5 lbs/week — the middle of the CDC/Mayo Clinic-recommended 1–2 lbs/week safe range) is editable in Settings as the target pace changes over the program.
+
+### Travel: Ireland trip food coverage
+
+Jeff is traveling to Ireland, so `FOODS` now includes an "Irish Foods" group (full Irish breakfast, stew, colcannon, black/white pudding, fish and chips, Guinness, whiskey, cider, etc.) alongside a few gaps in the base list (bacon, ham, real parmesan, butter) so trip meals can be logged with real calorie/macro estimates instead of skipped or guessed.
+
+### Nutrient compass confidence weighting
+
+The compass needle (`renderCompass()`) scores protein/carbs/fat/water/sleep against daily goals to show whether today is leaning healthy or unhealthy — independent of the calorie budget. Unlogged carbs/fat were originally scoring as maximally healthy (0g logged reads identically to a perfectly clean day), which could cancel out a real deficit like low protein and park the needle at a false "balanced" midpoint on a day where almost nothing had been logged. `nutrientScore()` now takes a `confidence` value (`logConfidence` in `renderCompass()`, based on how many meals are logged) that damps the carbs/fat "low is good" score until enough of the day is actually recorded.
 
 ## Not This
 
@@ -94,7 +102,7 @@ git push
 | Setting | Default | Notes |
 |---|---|---|
 | Daily calorie goal | 1800 cal | Adjust based on protocol phase |
-| Protocol name | Jeff's 225 Program | Display-only label in the header |
+| Protocol name | The Prison Protocol | Display-only label in the header |
 
 ### If Wade switches computers or browsers
 
@@ -102,10 +110,6 @@ Data does not follow automatically. To migrate:
 1. On the old machine: open the app, click "Share link", copy it
 2. On the new machine: open that link (it will be read-only)
 3. There is no built-in import yet — this is a known limitation
-
-### Daily email reminders (optional, separate infrastructure)
-
-`functions/` contains a Firebase Cloud Function (`morningLogReminder`, `noonLogReminder`, `eveningLogReminder`) that emails Jeff at 8:00am, 12:00pm, and 5:30pm America/Phoenix daily, indefinitely, once deployed — a link straight back to this app plus a one-line nudge to log. This is genuinely separate infrastructure from the static site (needs Firebase Blaze billing + a SendGrid account), not wired up by default. See `REMINDER_SETUP.md` for the one-time setup steps. No real email address, phone number, or API key is ever committed to this repo — they're stored as Firebase Secret Manager values, referenced by name only.
 
 ### Common future changes to make
 
