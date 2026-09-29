@@ -1,5 +1,5 @@
 <!doctype html>
-<title>Jeff's Tracker</title>
+<title>The Prison Protocol</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -640,7 +640,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 
 <div id="loginScreen" hidden>
   <div class="login-card">
-    <div class="login-logo">Jeff<em>'s</em> Tracker</div>
+    <div class="login-logo">The Prison Protocol</div>
     <div class="login-sub">Sign in to view and log progress</div>
     <form id="loginForm">
       <div class="login-field">
@@ -664,7 +664,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 </div>
 
 <header class="header">
-  <div class="header-title">Jeff<em>'s</em> Tracker</div>
+  <div class="header-title">The Prison Protocol</div>
   <div class="day-badge" id="dayBadge">Day —</div>
   <div class="day-badge streak-badge" id="streakBadge" hidden>🔥 —</div>
   <div class="protocol-label" id="protocolLabel">Protocol</div>
@@ -892,7 +892,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 <div class="goal-section">
   <div class="goal-section-top">
     <div class="goal-section-title">Progress to 225</div>
-    <div class="goal-section-sub">Jeff's 225 Program · 6 months</div>
+    <div class="goal-section-sub">The Prison Protocol · 6 months</div>
   </div>
 
   <div class="goal-bar-wrap">
@@ -972,7 +972,7 @@ const DEFAULT_DATA   = {
   exercise: [],
   water:    [],
   goal:     1800,
-  protocol: "Jeff's 225 Program",
+  protocol: "The Prison Protocol",
   weeklyLossGoal: 1.5,
   sleep:    [],
   proteinGoal: 130,
@@ -1572,15 +1572,19 @@ function renderLikelihood(td, sorted, latest, goal) {
 // deliberately separate from the calorie budget and from exercise — it
 // answers "is today's INPUT healthy," not "did I burn it off," so a hard
 // workout can never move this needle. Only what he ate/drank/slept can.
-function nutrientScore(actual, goal, direction) {
+function nutrientScore(actual, goal, direction, confidence = 1) {
   const ratio = goal > 0 ? actual / goal : 0;
   if (direction === 'min') {
     // protein / water / sleep: below goal is bad, at/above goal is good
     if (ratio >= 1) return Math.min(1, 0.5 + (ratio - 1) * 0.5);
     return Math.max(-1, (ratio - 1) * 1.5);
   }
-  // carbs / fat: below goal is fine-to-good, meaningfully over goal is bad
-  if (ratio <= 1) return Math.min(1, (1 - ratio) * 1.2);
+  // carbs / fat: below goal is fine-to-good, meaningfully over goal is bad.
+  // A "low" reading here is only trustworthy once enough of the day is
+  // logged — otherwise 0 meals looks identical to a perfectly clean day.
+  // `confidence` (0-1, based on how much has been logged) damps that
+  // false-good signal without touching the "actually went over" case.
+  if (ratio <= 1) return Math.min(1, (1 - ratio) * 1.2) * confidence;
   return Math.max(-1, -(ratio - 1) * 1.2);
 }
 
@@ -1607,6 +1611,11 @@ function renderCompass(td, todayMeals) {
   const wGoal = data.waterGoal   || 100;
   const sGoal = data.sleepGoal   || 7.5;
 
+  // How much of the day is actually logged, on a 0-1 scale (3 meals = full
+  // confidence). Gates the carbs/fat "low is good" score below so an empty
+  // log can't read as a perfectly clean day.
+  const logConfidence = Math.min(1, todayMeals.length / 3);
+
   const nutrients = [
     { key:'protein', label:'Protein', val:protein, unit:'g',  goal:pGoal, dir:'min' },
     { key:'carbs',   label:'Carbs',   val:carbs,   unit:'g',  goal:cGoal, dir:'max' },
@@ -1619,7 +1628,7 @@ function renderCompass(td, todayMeals) {
 
   const hasAnyLog = todayMeals.length > 0 || water > 0 || sleep != null;
 
-  nutrients.forEach(n => n.score = nutrientScore(n.val, n.goal, n.dir));
+  nutrients.forEach(n => n.score = nutrientScore(n.val, n.goal, n.dir, logConfidence));
   const avgScore = hasAnyLog
     ? nutrients.reduce((s,n) => s + n.score, 0) / nutrients.length
     : 0;
@@ -1796,12 +1805,14 @@ function renderGoalProgress(sorted, latest) {
   // progress bar math; purely a bonus reach shown once 225 is realistically
   // in play, so it never looks like the actual finish line moved.
   const STRETCH = [
-    { w: 215, name: '215 — Blue Steel', note: 'Beyond the plan. Elite for 6’1″. Rare air.' },
-    { w: 210, name: '210 — Different Level', note: 'Life-changing territory. Almost nobody gets here.' },
+    { w: 215, name: '215 — Blue Steel', note: 'Doing your own bid now. Nobody’s touching your chow tray at 215.' },
+    { w: 210, name: '210 — Time Served', note: 'That’s a nickel’s worth of discipline. Pack your box, you’re getting short.' },
+    { w: 205, name: '205 — Good Behavior', note: 'Model inmate. The parole board loves a guy who hits his numbers.' },
+    { w: 200, name: '200 — Early Release', note: 'Turn in the jumpsuit. You did the bid better than anybody expected.' },
   ].filter(m => m.w < startW);
 
   const stretchRowsHtml = STRETCH.length ? (
-    '<div class="goal-stretch-divider"><span class="goal-stretch-label">Bonus — Beyond The Goal</span></div>'
+    '<div class="goal-stretch-divider"><span class="goal-stretch-label">Bonus — Beyond The Sentence</span></div>'
     + '<div class="goal-ms-list" style="margin-bottom:16px">'
     + STRETCH.map(m => {
         const hit = currentW <= m.w;
