@@ -391,6 +391,11 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
   color: var(--cal); white-space: nowrap; font-variant-numeric: tabular-nums;
 }
 .fp-no-results { padding: 14px 13px; font-size: .84rem; color: var(--text-2); font-style: italic; }
+.fp-fat-flag {
+  font-size: .62rem; letter-spacing: .03em; text-transform: uppercase; font-weight: 600;
+  color: var(--danger); border: 1px solid var(--danger); border-radius: 4px;
+  padding: 1px 5px; white-space: nowrap; opacity: .85;
+}
 .btn {
   font-family: 'Oswald', sans-serif;
   font-size: .84rem;
@@ -1609,7 +1614,7 @@ function renderLikelihood(td, sorted, latest, goal) {
 // deliberately separate from the calorie budget and from exercise — it
 // answers "is today's INPUT healthy," not "did I burn it off," so a hard
 // workout can never move this needle. Only what he ate/drank/slept can.
-function nutrientScore(actual, goal, direction, confidence = 1, noPenalty = false) {
+function nutrientScore(actual, goal, direction, confidence = 1, noPenalty = false, overPenalty = 1.2) {
   const ratio = goal > 0 ? actual / goal : 0;
   if (direction === 'min') {
     // protein / water / sleep: below goal is bad, at/above goal is good
@@ -1624,8 +1629,12 @@ function nutrientScore(actual, goal, direction, confidence = 1, noPenalty = fals
   // logged — otherwise 0 meals looks identical to a perfectly clean day.
   // `confidence` (0-1, based on how much has been logged) damps that
   // false-good signal without touching the "actually went over" case.
+  // `overPenalty` steepens the over-goal slope per nutrient — fat gets a
+  // steeper one than carbs so repeatedly swapping calories into high-fat
+  // foods (e.g. cheese) drags the needle further than an equivalent carb
+  // overage would.
   if (ratio <= 1) return Math.min(1, (1 - ratio) * 1.2) * confidence;
-  return Math.max(-1, -(ratio - 1) * 1.2);
+  return Math.max(-1, -(ratio - 1) * overPenalty);
 }
 
 function renderCompass(td, todayMeals) {
@@ -1662,7 +1671,7 @@ function renderCompass(td, todayMeals) {
   const nutrients = [
     { key:'protein', label:'Protein', val:protein, unit:'g',  goal:pGoal, dir:'min' },
     { key:'carbs',   label:'Carbs',   val:carbs,   unit:'g',  goal:cGoal, dir:'max' },
-    { key:'fat',     label:'Fat',     val:fat,     unit:'g',  goal:fGoal, dir:'max' },
+    { key:'fat',     label:'Fat',     val:fat,     unit:'g',  goal:fGoal, dir:'max', overPenalty:1.6 },
     { key:'water',   label:'Water',   val:water,   unit:'oz', goal:wGoal, dir:'min', noPenalty:true },
   ];
   if (sleep != null) {
@@ -1671,7 +1680,7 @@ function renderCompass(td, todayMeals) {
 
   const hasAnyLog = todayMeals.length > 0 || water > 0 || sleep != null;
 
-  nutrients.forEach(n => n.score = nutrientScore(n.val, n.goal, n.dir, logConfidence, n.noPenalty));
+  nutrients.forEach(n => n.score = nutrientScore(n.val, n.goal, n.dir, logConfidence, n.noPenalty, n.overPenalty));
   const avgScore = hasAnyLog
     ? nutrients.reduce((s,n) => s + n.score, 0) / nutrients.length
     : 0;
@@ -1885,6 +1894,7 @@ function renderGoalProgress(sorted, latest) {
     { w: 210, name: '210 — Time Served', note: 'That’s a nickel’s worth of discipline. Pack your box, you’re getting short.' },
     { w: 205, name: '205 — Good Behavior', note: 'Model inmate. The parole board loves a guy who hits his numbers.' },
     { w: 200, name: '200 — Early Release', note: 'Turn in the jumpsuit. You did the bid better than anybody expected.' },
+    { w: 189, name: '189 — CDC Healthy BMI', note: 'This is the actual clinical finish line for 6\'1" — the bottom of CDC\'s healthy weight range, not a nickname.' },
   ].filter(m => m.w < startW);
 
   const stretchRowsHtml = STRETCH.length ? (
@@ -2464,6 +2474,23 @@ const EXERCISES = [
     return out;
   }
 
+  // A food is flagged "high fat" when fat supplies at least half its calories
+  // (fat is 9 cal/g) — a data-driven cutoff, not a round number: it lands
+  // right around the 75th percentile of the current food list, so it marks
+  // the genuinely fat-heavy quarter rather than half the picker. Shown before
+  // Jeff taps the item, not after, so the choice is informed up front.
+  function isHighFat(f) {
+    return f.c > 0 && typeof f.f === 'number' && (f.f * 9) / f.c >= 0.5;
+  }
+
+  function optionHtml(f) {
+    const flag = isHighFat(f) ? '<span class="fp-fat-flag" title="At least half these calories come from fat">High fat</span>' : '';
+    return '<div class="fp-option" data-n="' + esc(f.n) + '" data-c="' + f.c + '">'
+      + '<span class="fp-option-name">' + esc(f.n) + '</span>'
+      + flag
+      + '<span class="fp-option-cal">' + f.c + ' cal</span></div>';
+  }
+
   function renderDropdown(q) {
     const lq = q.toLowerCase();
     const filtered = lq ? FOODS.filter(f => f.n.toLowerCase().includes(lq)) : FOODS;
@@ -2475,20 +2502,10 @@ const EXERCISES = [
     const groups = {};
     filtered.forEach(f => { (groups[f.g] = groups[f.g] || []).push(f); });
     const recentHtml = recent.length
-      ? '<div class="fp-group-label">Recent</div>' +
-        recent.map(f =>
-          '<div class="fp-option" data-n="' + esc(f.n) + '" data-c="' + f.c + '">' +
-          '<span class="fp-option-name">' + esc(f.n) + '</span>' +
-          '<span class="fp-option-cal">' + f.c + ' cal</span></div>'
-        ).join('')
+      ? '<div class="fp-group-label">Recent</div>' + recent.map(optionHtml).join('')
       : '';
     dropdown.innerHTML = recentHtml + Object.entries(groups).map(([g, foods]) =>
-      '<div class="fp-group-label">' + esc(g) + '</div>' +
-      foods.map(f =>
-        '<div class="fp-option" data-n="' + esc(f.n) + '" data-c="' + f.c + '">' +
-        '<span class="fp-option-name">' + esc(f.n) + '</span>' +
-        '<span class="fp-option-cal">' + f.c + ' cal</span></div>'
-      ).join('')
+      '<div class="fp-group-label">' + esc(g) + '</div>' + foods.map(optionHtml).join('')
     ).join('');
     dropdown.hidden = false;
   }
