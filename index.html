@@ -1609,12 +1609,15 @@ function renderLikelihood(td, sorted, latest, goal) {
 // deliberately separate from the calorie budget and from exercise — it
 // answers "is today's INPUT healthy," not "did I burn it off," so a hard
 // workout can never move this needle. Only what he ate/drank/slept can.
-function nutrientScore(actual, goal, direction, confidence = 1) {
+function nutrientScore(actual, goal, direction, confidence = 1, noPenalty = false) {
   const ratio = goal > 0 ? actual / goal : 0;
   if (direction === 'min') {
     // protein / water / sleep: below goal is bad, at/above goal is good
     if (ratio >= 1) return Math.min(1, 0.5 + (ratio - 1) * 0.5);
-    return Math.max(-1, (ratio - 1) * 1.5);
+    // `noPenalty` (water): not drinking enough should never drag the needle
+    // toward unhealthy — floor at 0 instead of going negative. Drinking it
+    // still earns the same positive credit as any other factor above goal.
+    return noPenalty ? 0 : Math.max(-1, (ratio - 1) * 1.5);
   }
   // carbs / fat: below goal is fine-to-good, meaningfully over goal is bad.
   // A "low" reading here is only trustworthy once enough of the day is
@@ -1660,7 +1663,7 @@ function renderCompass(td, todayMeals) {
     { key:'protein', label:'Protein', val:protein, unit:'g',  goal:pGoal, dir:'min' },
     { key:'carbs',   label:'Carbs',   val:carbs,   unit:'g',  goal:cGoal, dir:'max' },
     { key:'fat',     label:'Fat',     val:fat,     unit:'g',  goal:fGoal, dir:'max' },
-    { key:'water',   label:'Water',   val:water,   unit:'oz', goal:wGoal, dir:'min' },
+    { key:'water',   label:'Water',   val:water,   unit:'oz', goal:wGoal, dir:'min', noPenalty:true },
   ];
   if (sleep != null) {
     nutrients.push({ key:'sleep', label:'Sleep', val:sleep, unit:'h', goal:sGoal, dir:'min' });
@@ -1668,7 +1671,7 @@ function renderCompass(td, todayMeals) {
 
   const hasAnyLog = todayMeals.length > 0 || water > 0 || sleep != null;
 
-  nutrients.forEach(n => n.score = nutrientScore(n.val, n.goal, n.dir, logConfidence));
+  nutrients.forEach(n => n.score = nutrientScore(n.val, n.goal, n.dir, logConfidence, n.noPenalty));
   const avgScore = hasAnyLog
     ? nutrients.reduce((s,n) => s + n.score, 0) / nutrients.length
     : 0;
@@ -1714,12 +1717,16 @@ function renderCompass(td, todayMeals) {
   } else {
     // Name every factor pulling the needle the "wrong" way, not just the single worst one —
     // a needle that only ever blames one thing reads as arbitrary; naming all of them reads as true.
+    // The verdict word itself always follows avgScore's sign — a single dragging factor (e.g.
+    // low protein) is named as context but can no longer flip the label to "unhealthy" while
+    // the overall average, and the needle position, are clearly positive.
     const dragging = nutrients.filter(n => n.score <= -0.15);
     const helping   = nutrients.filter(n => n.score >= 0.15);
-    if (avgScore >= 0.15 && dragging.length === 0) {
+    if (avgScore >= 0.15) {
       const names = helping.map(n => n.label.toLowerCase()).join(', ');
-      detail.innerHTML = 'Leaning <strong>healthy</strong> — ' + (names || 'on track') + ' holding steady';
-    } else if (avgScore <= -0.15 || dragging.length > 0) {
+      const verdict = avgScore >= 0.4 ? 'well into healthy' : 'leaning healthy';
+      detail.innerHTML = 'Today is <strong>' + verdict + '</strong> — ' + (names || 'on track') + ' holding steady';
+    } else if (avgScore <= -0.15) {
       const names = dragging.map(n => n.label.toLowerCase() + ' ' + (n.dir === 'min' ? 'low' : 'high')).join(', ');
       const verdict = avgScore <= -0.4 ? 'well into unhealthy' : 'leaning unhealthy';
       detail.innerHTML = 'Today is <strong>' + verdict + '</strong> — ' + names;
