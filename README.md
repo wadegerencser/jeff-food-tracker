@@ -57,7 +57,7 @@ Not a general-purpose fitness or nutrition app. Not a medical or clinical tool �
 
 ## Impact
 
-Jeff reaches 225 lbs within 6 months (by approximately March 2027), reducing his type 2 diabetes risk and preserving his current career path. Secondary: Wade and Jeff have a shared, up-to-date view of daily progress without any login or app install required.
+Jeff reaches 189 lbs within 6 months (by approximately March 2027) — the CDC healthy-BMI floor for a 6'1" man, not an arbitrary round number — reducing his type 2 diabetes risk and preserving his current career path. Secondary: Wade and Jeff have a shared, up-to-date view of daily progress without any login or app install required.
 
 ## Details
 
@@ -70,7 +70,7 @@ Jeff reaches 225 lbs within 6 months (by approximately March 2027), reducing his
 | **Repo** | https://github.com/wadegerencser/jeff-food-tracker |
 | **Local path** | `~/Projects/jeff-food-tracker/` |
 | **Started** | 2026-09-22 (Jeff's Day 4, first recorded weight: 245.7 lbs) |
-| **Goal** | 225 lbs by ~March 2027 |
+| **Goal** | 189 lbs by ~March 2027 (CDC healthy-BMI floor for 6'1") |
 
 ---
 
@@ -131,6 +131,7 @@ Data does not follow automatically. To migrate:
 |---|---|---|
 | Start (first recorded) | Sep 22, 2026 | 245.7 lbs |
 | 10 lbs lost | ~Nov 2026 | ~235 lbs |
-| 20 lbs lost | ~Dec 2026 | ~225 lbs |
-| 30 lbs lost | ~Feb 2027 | ~215 lbs |
-| Goal (35–40 lbs) | ~Mar 2027 | 205–210 lbs |
+| 20 lbs lost | ~Dec 2026 | ~225 lbs (old goal, now a checkpoint) |
+| 30 lbs lost | ~Jan 2027 | ~215 lbs |
+| 40 lbs lost | ~Feb 2027 | ~205 lbs |
+| Goal (~57 lbs) | ~Mar 2027 | 189 lbs — CDC healthy BMI floor for 6'1" |

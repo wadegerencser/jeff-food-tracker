@@ -333,6 +333,16 @@ body {
   border: 1px solid var(--accent);
 }
 .meal-budget-nudge.over { background: rgba(232,64,64,.12); color: var(--danger); border-color: var(--danger); }
+.meal-fat-warning {
+  font-size: .82rem;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-top: -2px;
+  background: rgba(232,64,64,.12);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
 label {
   font-size: .7rem;
   letter-spacing: .08em;
@@ -521,7 +531,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 .likelihood-fill{height:100%;border-radius:7px;transition:width .6s ease, background .4s ease;}
 .likelihood-detail{font-size:.78rem;color:var(--text-2);margin-top:8px;}
 
-/* ── Stretch tier (215/210 — beyond the 225 goal) ─────── */
+/* ── Stretch tier (180 — beyond the 189 goal) ─────── */
 .goal-stretch-divider{display:flex;align-items:center;gap:10px;margin:6px 0 10px;}
 .goal-stretch-divider::before,.goal-stretch-divider::after{content:'';flex:1;height:1px;background:var(--border);}
 .goal-stretch-label{font-family:'Oswald',sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--stretch);white-space:nowrap;}
@@ -798,6 +808,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
                 <input type="hidden" id="mName">
               </div>
             </div>
+            <div class="meal-fat-warning" id="mealFatWarning" hidden></div>
             <div><label for="mCals">Calories <span style="font-size:.65rem;color:var(--text-2)">(auto-filled, adjustable)</span></label><input type="number" id="mCals" placeholder="auto-filled" min="0" max="9999"></div>
             <button class="btn btn-cal" id="logMealBtn">Add Meal</button>
           </div>
@@ -930,17 +941,17 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 
 </div>
 
-<!-- ── Progress to 225 ── -->
+<!-- ── Progress to 189 ── -->
 <div class="goal-section">
   <div class="goal-section-top">
-    <div class="goal-section-title">Progress to 225</div>
-    <div class="goal-section-sub">The Prison Protocol · 6 months</div>
+    <div class="goal-section-title">Progress to 189</div>
+    <div class="goal-section-sub">The Prison Protocol · 6 months · CDC healthy-BMI floor for 6'1"</div>
   </div>
 
   <div class="goal-bar-wrap">
     <div class="goal-bar-ends">
       <span id="goalStartLbl">— start</span>
-      <span>225 lbs — goal</span>
+      <span>189 lbs — goal</span>
     </div>
     <div class="goal-bar-track">
       <div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div>
@@ -951,7 +962,7 @@ input[type="number"] { font-family: 'Oswald', sans-serif; font-size: 1rem; }
 
   <div class="likelihood-wrap">
     <div class="likelihood-top">
-      <span class="likelihood-title">Likelihood of Reaching 225</span>
+      <span class="likelihood-title">Likelihood of Reaching 189</span>
       <span class="likelihood-tag" id="likelihoodTag">—</span>
     </div>
     <div class="likelihood-track">
@@ -1257,7 +1268,7 @@ function renderWeightChart(sorted) {
   const ctx    = document.getElementById('weightChart').getContext('2d');
   const labels = sorted.map(w => fmtDate(w.date));
   const vals   = sorted.map(w => w.weight);
-  const GOAL_W = 225, STRETCH_W = 215;
+  const GOAL_W = 189, STRETCH_W = 200;
   const yMin   = vals.length ? Math.floor(Math.min(...vals) - 5) : 200;
   const yMax   = vals.length ? Math.ceil(Math.max(...vals)  + 5) : 300;
 
@@ -1314,8 +1325,8 @@ function renderWeightChart(sorted) {
     plugins: [{
       id: 'goalLines',
       afterDraw(chart) {
-        drawGoalLine(chart, GOAL_W, c.cal, '225 Goal');
-        drawGoalLine(chart, STRETCH_W, c.stretch, '215 Stretch', [2, 3]);
+        drawGoalLine(chart, GOAL_W, c.cal, '189 Goal');
+        drawGoalLine(chart, STRETCH_W, c.stretch, '200 Checkpoint', [2, 3]);
       }
     }]
   });
@@ -1485,13 +1496,13 @@ function render() {
   renderLikelihood(td, sorted, latest, goal);
 }
 
-// ── Likelihood of reaching 225 ───────────────────────────────
+// ── Likelihood of reaching 189 ───────────────────────────────
 // A composite score, same spirit as an EIGRP metric weighting several
 // factors together rather than one — no single bad day should swing it
 // wildly, and no single good day should either. Weighted inputs, all pulled
 // from real historicals already in `data`:
 //   40% pace factor    — actual lbs/day rate vs. the rate still required
-//                         to hit 225 by the 6-month deadline
+//                         to hit 189 by the 6-month deadline
 //   25% weekly discipline — trailing 4 weeks of calorie-vs-allowance balance
 //   20% nutrient trend — 7-day rolling average of the same score the
 //                         compass needle uses (so a rough Tuesday doesn't
@@ -1509,11 +1520,14 @@ function dailyNutrientScore(dateStr) {
   const protein = meals.reduce((s,m) => s + (m.protein || 0), 0);
   const carbs   = meals.reduce((s,m) => s + (m.carbs   || 0), 0);
   const fat     = meals.reduce((s,m) => s + (m.fat     || 0), 0);
+  // Same signature the compass needle uses (nutrientScore's 5th/6th args:
+  // noPenalty for water, overPenalty:1.6 for fat) so this 7-day trend can
+  // never disagree with the needle about how a high-fat day should score.
   const scores = [
     nutrientScore(protein, data.proteinGoal || 130, 'min'),
-    nutrientScore(carbs,   data.carbGoal    || 150, 'max'),
-    nutrientScore(fat,     data.fatGoal     || 55,  'max'),
-    nutrientScore(water,   data.waterGoal   || 100, 'min'),
+    nutrientScore(carbs,   data.carbGoal    || 150, 'max', 1, false, 1.2),
+    nutrientScore(fat,     data.fatGoal     || 55,  'max', 1, false, 1.6),
+    nutrientScore(water,   data.waterGoal   || 100, 'min', 1, true),
   ];
   if (sleepEntry) scores.push(nutrientScore(sleepEntry.hours, data.sleepGoal || 7.5, 'min'));
   return scores.reduce((s,v) => s + v, 0) / scores.length;
@@ -1525,7 +1539,7 @@ function renderLikelihood(td, sorted, latest, goal) {
   const detailEl = document.getElementById('likelihoodDetail');
   if (!fillEl) return;
 
-  const GOAL_W = 225;
+  const GOAL_W = 189;
   const startW = sorted.length ? sorted[0].weight : 245.7;
   const currentW = latest ? latest.weight : startW;
   const toGo = Math.max(0, currentW - GOAL_W);
@@ -1560,7 +1574,13 @@ function renderLikelihood(td, sorted, latest, goal) {
     const consumed = data.meals.filter(m => days.includes(m.date)).reduce((s,m) => s + m.calories, 0);
     const burned   = data.exercise.filter(e => days.includes(e.date)).reduce((s,e) => s + e.calories, 0);
     const hadAnyLog = data.meals.some(m => days.includes(m.date));
-    if (!hadAnyLog && w > 0) continue; // don't penalize weeks before Jeff started logging
+    // A week with zero logged meals reads as "0 consumed vs. a full allowance" —
+    // a mathematically perfect score for a week nothing was actually tracked.
+    // Skip it entirely (current week included) rather than let an empty log
+    // masquerade as flawless discipline. This still serves the original intent
+    // of not penalizing weeks before Jeff started logging, since those are
+    // also empty; it just no longer carves out an exception for "right now."
+    if (!hadAnyLog) continue;
     const allowance = goal * 7 + burned;
     weekBalances.push(Math.max(0, Math.min(1, 0.5 + (allowance - consumed) / (goal * 7))));
   }
@@ -1600,7 +1620,7 @@ function renderLikelihood(td, sorted, latest, goal) {
   const weakest = [...factors].sort((a,b) => a.score - b.score)[0];
   const strongest = [...factors].sort((a,b) => b.score - a.score)[0];
   if (toGo <= 0) {
-    detailEl.textContent = '225 already reached — this is now tracking toward the stretch tier.';
+    detailEl.textContent = '189 already reached — this is now tracking toward the stretch tier.';
   } else if (streak === 0) {
     detailEl.textContent = 'No recent logs — likelihood drops the longer the streak stays cold.';
   } else {
@@ -1831,7 +1851,7 @@ document.getElementById('logWeightBtn')?.addEventListener('click', () => {
 
 // ── Goal progress ─────────────────────────────────────────
 function renderGoalProgress(sorted, latest) {
-  const GOAL    = 225;
+  const GOAL    = 189;
   const startW  = sorted.length ? sorted[0].weight : 245.7;
   const currentW = latest ? latest.weight : startW;
   const totalRange = startW - GOAL;
@@ -1847,8 +1867,9 @@ function renderGoalProgress(sorted, latest) {
   document.getElementById('gStatToGo').textContent     = toGo.toFixed(1);
   document.getElementById('gStatPct').textContent      = pct.toFixed(0) + '%';
 
-  // milestone dots on the bar
-  const msDots   = [{w:240},{w:235},{w:230},{w:225}].filter(m => m.w < startW);
+  // milestone dots on the bar — the old 200-215 "bonus" tiers are now
+  // required checkpoints on the way to 189, not optional extras.
+  const msDots   = [{w:230},{w:215},{w:200},{w:189}].filter(m => m.w < startW);
   const dotsEl   = document.getElementById('goalMsDots');
   const labelsEl = document.getElementById('goalMsLabels');
   dotsEl.innerHTML = labelsEl.innerHTML = '';
@@ -1866,12 +1887,16 @@ function renderGoalProgress(sorted, latest) {
     labelsEl.appendChild(lbl);
   });
 
-  // milestone rows
+  // milestone rows — checkpoints on the required path to 189. No "bonus"
+  // framing here: 200-215 used to be stretch tiers past a 225 goal, now
+  // they are just distance markers to the real finish line.
   const milestones = [
-    { w: 240, name: 'First 5 lbs gone',  note: 'The habit is forming. Momentum is real.' },
-    { w: 235, name: '10 lbs down',        note: 'Halfway. Clothes are starting to fit differently.' },
-    { w: 230, name: '15 lbs down',        note: 'People are noticing. Keep going.' },
-    { w: 225, name: '225 — Goal Completed', note: '' },
+    { w: 235, name: '10 lbs down', note: 'The floor is showing. This is the easy part — it does not stay easy.' },
+    { w: 225, name: '20 lbs down', note: 'This used to be the whole goal. Now it is a checkpoint, not a finish line.' },
+    { w: 215, name: '30 lbs down', note: 'Discipline has to hold here, not just motivation.' },
+    { w: 205, name: '40 lbs down', note: 'This is where logging slips if it is going to slip.' },
+    { w: 200, name: 'Under 200', note: 'Symbolic number, real distance still ahead of it.' },
+    { w: 189, name: '189 — Goal: CDC Healthy BMI', note: 'The actual clinical finish line for a 6\'1″ man, not a nickname.' },
   ].filter(m => m.w <= Math.ceil(startW));
 
   const mainRowsHtml = milestones.map(m => {
@@ -1886,15 +1911,11 @@ function renderGoalProgress(sorted, latest) {
       + '<div class="goal-ms-note">' + esc(m.note) + '</div></div></div>';
   }).join('');
 
-  // Stretch tier — beyond the real 225 goal. Not part of the plan or the
-  // progress bar math; purely a bonus reach shown once 225 is realistically
-  // in play, so it never looks like the actual finish line moved.
+  // Stretch tier — beyond the real 189 goal. Not part of the plan or the
+  // progress bar math; a bonus reach shown once 189 is realistically in
+  // play, so it never looks like the actual finish line moved.
   const STRETCH = [
-    { w: 215, name: '215 — Blue Steel', note: 'Doing your own bid now. Nobody’s touching your chow tray at 215.' },
-    { w: 210, name: '210 — Time Served', note: 'That’s a nickel’s worth of discipline. Pack your box, you’re getting short.' },
-    { w: 205, name: '205 — Good Behavior', note: 'Model inmate. The parole board loves a guy who hits his numbers.' },
-    { w: 200, name: '200 — Early Release', note: 'Turn in the jumpsuit. You did the bid better than anybody expected.' },
-    { w: 189, name: '189 — CDC Healthy BMI', note: 'This is the actual clinical finish line for 6\'1" — the bottom of CDC\'s healthy weight range, not a nickname.' },
+    { w: 180, name: '180 — Beyond Goal', note: 'Past the clinical target. Margin, not a requirement.' },
   ].filter(m => m.w < startW);
 
   const stretchRowsHtml = STRETCH.length ? (
@@ -1917,7 +1938,7 @@ function renderGoalProgress(sorted, latest) {
   // projected finish
   const projEl = document.getElementById('goalProjection');
   if (toGo <= 0) {
-    projEl.textContent = 'Goal reached — 225 lbs. Well done, Jeff.';
+    projEl.textContent = 'Goal reached — 189 lbs.';
   } else if (sorted.length >= 2) {
     const first = sorted[0], last = sorted[sorted.length - 1];
     const days  = Math.max(1, (new Date(last.date + 'T12:00:00Z') - new Date(first.date + 'T12:00:00Z')) / 86400000);
@@ -2458,6 +2479,7 @@ const EXERCISES = [
   const hiddenEl  = document.getElementById('mName');
   const calEl     = document.getElementById('mCals');
   const wrap      = document.getElementById('fpWrap');
+  const fatWarnEl = document.getElementById('mealFatWarning');
   if (!searchEl) return;
 
   // Last 5 distinct foods Jeff has actually logged, most recent first —
@@ -2515,7 +2537,23 @@ const EXERCISES = [
     hiddenEl.value = '';
     clearBtn.hidden = !searchEl.value;
     renderDropdown(searchEl.value);
+    if (fatWarnEl) fatWarnEl.hidden = true;
   });
+
+  // Recent-food entries only carry {g,n,c} — look the full record up in
+  // FOODS by name so the warning still fires on a 1-tap repeat log, not
+  // just a fresh search.
+  function updateFatWarning(name) {
+    if (!fatWarnEl) return;
+    const food = FOODS.find(f => f.n === name);
+    if (food && isHighFat(food)) {
+      const pct = Math.round((food.f * 9) / food.c * 100);
+      fatWarnEl.textContent = 'High fat — about ' + pct + '% of these calories come from fat. Logging it will pull today’s balance toward unhealthy.';
+      fatWarnEl.hidden = false;
+    } else {
+      fatWarnEl.hidden = true;
+    }
+  }
 
   dropdown.addEventListener('mousedown', e => {
     const opt = e.target.closest('.fp-option');
@@ -2528,6 +2566,7 @@ const EXERCISES = [
     calEl.value     = cal;
     clearBtn.hidden = false;
     dropdown.hidden = true;
+    updateFatWarning(name);
   });
 
   clearBtn.addEventListener('click', () => {
@@ -2536,6 +2575,7 @@ const EXERCISES = [
     calEl.value     = '';
     clearBtn.hidden = true;
     dropdown.hidden = true;
+    if (fatWarnEl) fatWarnEl.hidden = true;
     searchEl.focus();
   });
 
